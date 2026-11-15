@@ -427,4 +427,13 @@ main {
     flex-direction: column;
     text-align: center;
   }
+   /* Smooth Shimmer untuk Badge yang Sedang Memuat */
+@keyframes shimmerPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+
+#election-status-badge.badge-neutral {
+  animation: shimmerPulse 1.4s infinite ease-in-out;
+}
 }
