@@ -115,7 +115,7 @@
   }
 
   // ==========================================================================
-  // PAGE 01 — LANDING PAGE
+  // PAGE 01 — LANDING PAGE (AUTO-SYNC REALTIME TANPA PERLU REFRESH)
   // ==========================================================================
   async function initLandingPage() {
     const badgeEl = document.getElementById("election-status-badge");
@@ -125,6 +125,133 @@
     const closedNoticeEl = document.getElementById("closed-notice");
     const publicResultsSection = document.getElementById("public-results-section");
 
+    let lastRenderedSignature = "";
+    let resultsLoaded = false;
+
+    async function applyLandingSettings(supabase, settings) {
+      if (!settings) return;
+
+      const effectiveStatus = resolveEffectiveStatus(settings);
+      const signature = [
+        effectiveStatus,
+        settings.period_label || "",
+        settings.start_at || "",
+        settings.end_at || ""
+      ].join("|");
+
+      // Lewati render ulang jika tidak ada perubahan status/jadwal
+      if (signature === lastRenderedSignature) return;
+      lastRenderedSignature = signature;
+
+      Utils.hideAlert("setup-alert");
+
+      if (periodEl && settings.period_label) {
+        periodEl.textContent = `PERIODE KEPENGURUSAN ${settings.period_label}`;
+      }
+
+      if (scheduleInfoEl) {
+        if (settings.start_at || settings.end_at) {
+          const startText = settings.start_at
+            ? Utils.formatDateTime(settings.start_at)
+            : "Ditentukan panitia";
+          const endText = settings.end_at
+            ? Utils.formatDateTime(settings.end_at)
+            : "Ditentukan panitia";
+          scheduleInfoEl.innerHTML = `Jadwal Pemungutan Suara: <strong>${startText}</strong> s.d. <strong>${endText}</strong>`;
+          scheduleInfoEl.classList.remove("hidden");
+        } else {
+          scheduleInfoEl.classList.add("hidden");
+        }
+      }
+
+      if (effectiveStatus === "OPEN") {
+        badgeEl.className = "badge badge-open";
+        badgeEl.innerHTML = '<span class="badge-dot"></span><span>Sedang Berlangsung</span>';
+        startBtnEl.classList.remove("hidden");
+        closedNoticeEl.classList.add("hidden");
+      } else if (effectiveStatus === "SCHEDULED" || effectiveStatus === "SETUP") {
+        badgeEl.className = "badge badge-scheduled";
+        badgeEl.innerHTML = '<span class="badge-dot"></span><span>Belum Dimulai</span>';
+        startBtnEl.classList.add("hidden");
+        closedNoticeEl.textContent =
+          "Pemungutan suara belum dibuka oleh panitia. Halaman ini akan otomatis aktif begitu pemilihan dibuka.";
+        closedNoticeEl.classList.remove("hidden");
+      } else {
+        badgeEl.className = "badge badge-closed";
+        badgeEl.innerHTML = '<span class="badge-dot"></span><span>Pemilihan Ditutup</span>';
+        startBtnEl.classList.add("hidden");
+        closedNoticeEl.textContent =
+          effectiveStatus === "RESULTS_PUBLISHED"
+            ? "Pemilihan telah selesai dan hasil resmi telah disahkan oleh panitia."
+            : "Pemungutan suara telah ditutup. Rekapitulasi suara sedang diproses oleh panitia.";
+        closedNoticeEl.classList.remove("hidden");
+      }
+
+      if (effectiveStatus === "RESULTS_PUBLISHED" && publicResultsSection && !resultsLoaded) {
+        const { data: tally, error: tallyErr } = await supabase.rpc("get_election_tally");
+        if (!tallyErr && tally) {
+          resultsLoaded = true;
+          renderPublicResults(publicResultsSection, tally);
+        }
+      } else if (effectiveStatus !== "RESULTS_PUBLISHED" && publicResultsSection) {
+        resultsLoaded = false;
+        publicResultsSection.classList.add("hidden");
+      }
+    }
+
+    try {
+      const supabase = SbService.getClient();
+
+      async function fetchAndSync() {
+        const { data: settings, error } = await supabase
+          .from("election_settings")
+          .select("*")
+          .eq("id", 1)
+          .single();
+
+        if (error) throw error;
+        await applyLandingSettings(supabase, settings);
+      }
+
+      // 1. Muat status pertama kali
+      await fetchAndSync();
+
+      // 2. Dengarkan perubahan instan via Supabase Realtime
+      const statusChannel = supabase
+        .channel("public-election-settings")
+        .on(
+          "postgres_changes",
+          {
+            event: "UPDATE",
+            schema: "public",
+            table: "election_settings",
+            filter: "id=eq.1"
+          },
+          async (payload) => {
+            if (payload && payload.new) {
+              await applyLandingSettings(supabase, payload.new);
+            }
+          }
+        )
+        .subscribe();
+
+      // 3. Cadangan pengecekan otomatis tiap 4 detik saat tab aktif
+      const pollTimer = setInterval(() => {
+        if (document.visibilityState === "visible") {
+          fetchAndSync().catch(() => {});
+        }
+      }, 4000);
+
+      window.addEventListener("beforeunload", () => {
+        clearInterval(pollTimer);
+        supabase.removeChannel(statusChannel);
+      });
+    } catch (err) {
+      badgeEl.className = "badge badge-closed";
+      badgeEl.innerHTML = '<span class="badge-dot"></span><span>Gangguan Koneksi</span>';
+      Utils.showAlert("setup-alert", "error", SbService.mapFriendlyError(err));
+    }
+  }
     try {
       const supabase = SbService.getClient();
       const { data: settings, error } = await supabase
