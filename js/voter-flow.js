@@ -499,4 +499,127 @@
         .select("*")
         .eq("position", "CHAIRPERSON")
         .eq("is_active", true)
-        .order("candidate_number", { ascending
+        .order("candidate_number", { ascending: true });
+
+      if (error) throw error;
+      candidates = data || [];
+
+      const handleSelect = (chosenId) => {
+        selectedId = chosenId;
+        const chosenObj = candidates.find((c) => c.id === chosenId) || null;
+        Utils.saveVoterDraft({ chairperson: chosenObj });
+        renderCandidateCards(gridEl, candidates, selectedId, handleSelect);
+        updateNextButtonState();
+      };
+
+      renderCandidateCards(gridEl, candidates, selectedId, handleSelect);
+      updateNextButtonState();
+    } catch (err) {
+      Utils.showAlert("ballot-alert", "error", SbService.mapFriendlyError(err));
+    }
+
+    nextBtn.addEventListener("click", () => {
+      if (!selectedId) return;
+      window.location.href = "./review.html";
+    });
+  }
+
+  // ==========================================================================
+  // PAGE 04 — VOTE REVIEW & ATOMIC SUBMISSION
+  // ==========================================================================
+  function initReviewPage() {
+    const draft = Utils.getVoterDraft();
+    if (!draft || !draft.verified || !draft.chairperson) {
+      window.location.replace("./verify.html");
+      return;
+    }
+
+    const chairSummaryEl = document.getElementById("review-chairperson-box");
+    const confirmCheckbox = document.getElementById("checkbox-final-consent");
+    const submitBtn = document.getElementById("btn-submit-ballot");
+
+    const candidate = draft.chairperson;
+    const numFormatted = String(candidate.candidate_number).padStart(2, "0");
+    const initials = getInitials(candidate.full_name);
+    const safeName = Utils.escapeHTML(candidate.full_name);
+
+    const photoHtml = candidate.photo_url
+      ? `<img src="${Utils.escapeHTML(candidate.photo_url)}" alt="Foto ${safeName}" class="candidate-photo" style="width:60px;height:60px;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+         <div class="candidate-avatar-fallback" style="display:none;width:60px;height:60px;font-size:1.15rem;">${initials}</div>`
+      : `<div class="candidate-avatar-fallback" style="width:60px;height:60px;font-size:1.15rem;">${initials}</div>`;
+
+    chairSummaryEl.innerHTML = `
+      <div class="review-choice-meta">
+        ${photoHtml}
+        <div>
+          <span class="badge badge-neutral" style="margin-bottom:0.25rem;">Nomor Urut ${numFormatted}</span>
+          <div style="font-family:var(--font-heading); font-weight:700; font-size:1.1rem;">${safeName}</div>
+        </div>
+      </div>
+      <a href="./chairperson.html" class="btn btn-outline" style="min-height:40px; padding:0.45rem 0.9rem; font-size:0.8125rem;">
+        Ubah
+      </a>
+    `;
+
+    confirmCheckbox.addEventListener("change", () => {
+      submitBtn.disabled = !confirmCheckbox.checked;
+    });
+
+    submitBtn.addEventListener("click", async () => {
+      if (!confirmCheckbox.checked) return;
+
+      submitBtn.disabled = true;
+      confirmCheckbox.disabled = true;
+      submitBtn.textContent = "Menyimpan Surat Suara...";
+      Utils.hideAlert("review-alert");
+
+      try {
+        await Engine.submitBallotAtomic({
+          voterName: draft.voterName,
+          voterClass: draft.voterClass,
+          rawToken: draft.rawToken,
+          chairpersonId: draft.chairperson.id
+        });
+
+        Utils.clearVoterDraft();
+        sessionStorage.setItem(COMPLETED_FLAG_KEY, "true");
+
+        window.location.replace("./success.html");
+      } catch (err) {
+        if (String(err && err.message) === "SUBMISSION_IN_PROGRESS") return;
+        confirmCheckbox.disabled = false;
+        submitBtn.disabled = !confirmCheckbox.checked;
+        submitBtn.textContent = "KONFIRMASI DAN KIRIM SUARA";
+        Utils.showAlert("review-alert", "error", SbService.mapFriendlyError(err));
+      }
+    });
+  }
+
+  // ==========================================================================
+  // PAGE 05 — SUCCESS PAGE
+  // ==========================================================================
+  function initSuccessPage() {
+    Utils.clearVoterDraft();
+    const isCompleted = sessionStorage.getItem(COMPLETED_FLAG_KEY) === "true";
+    if (!isCompleted) {
+      window.location.replace("../index.html");
+      return;
+    }
+
+    const homeBtn = document.getElementById("btn-back-home");
+    if (homeBtn) {
+      homeBtn.addEventListener("click", () => {
+        sessionStorage.removeItem(COMPLETED_FLAG_KEY);
+      });
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const page = document.body.getAttribute("data-page");
+    if (page === "landing") initLandingPage();
+    else if (page === "verify") initVerifyPage();
+    else if (page === "chairperson") initChairpersonPage();
+    else if (page === "review") initReviewPage();
+    else if (page === "success") initSuccessPage();
+  });
+})();
