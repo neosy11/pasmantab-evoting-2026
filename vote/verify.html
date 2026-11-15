@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Verifikasi Pemilih — PASMANTAB e-VOTING 2026</title>
+  <link rel="stylesheet" href="../css/tokens.css" />
+  <link rel="stylesheet" href="../css/main.css" />
+  <link rel="stylesheet" href="../css/voter.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+</head>
+<body data-page="verify">
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="../index.html" class="brand-lockup">
+        <img src="../assets/logo-pasmantab.svg" alt="Logo PASMANTAB" class="brand-logo" />
+        <div>
+          <div class="brand-title">PASMANTAB e-VOTING</div>
+          <div class="brand-subtitle">PASKIBRA MAN 4 BANJAR</div>
+        </div>
+      </a>
+      <span class="badge badge-neutral">Tahap 1 dari 3</span>
+    </div>
+  </header>
+
+  <main>
+    <div class="container-narrow">
+      <nav class="vote-stepper" aria-label="Tahapan Pemilihan">
+        <div class="step-item active"><span class="step-num">1</span><br />Verifikasi</div>
+        <div class="step-item"><span class="step-num">2</span><br />Pilih Ketua</div>
+        <div class="step-item"><span class="step-num">3</span><br />Konfirmasi</div>
+      </nav>
+
+      <section class="card">
+        <h1 style="font-size: 1.4rem; margin-bottom: 0.35rem;">Verifikasi Hak Suara</h1>
+        <p class="text-muted mb-3" style="font-size: 0.9rem;">
+          Masukkan Nama Lengkap dan Kelas Anda, lalu pindai QR Code atau ketik Token Pemilihan yang berlaku.
+        </p>
+
+        <div id="verify-alert" class="alert hidden" role="alert"></div>
+
+        <div class="qr-scanner-panel">
+          <p style="font-size: 0.85rem; color: var(--color-text-secondary); margin-bottom: 0.75rem;">
+            Gunakan kamera untuk memindai QR Code Token dari panitia:
+          </p>
+          <button type="button" id="btn-toggle-scanner" class="btn btn-outline btn-full">
+            Pindai QR Code dengan Kamera
+          </button>
+          <div id="qr-scanner-wrapper" class="hidden">
+            <div id="qr-reader"></div>
+            <p class="form-hint mt-1">Arahkan kamera ke kotak QR Code Token Pemilihan.</p>
+          </div>
+        </div>
+
+        <form id="verify-form" novalidate>
+          <div class="form-group">
+            <label for="input-full-name" class="form-label">Nama Lengkap</label>
+            <input
+              type="text"
+              id="input-full-name"
+              class="form-input"
+              placeholder="Contoh: Muhammad Rizky"
+              autocomplete="name"
+              required
+            />
+            <span class="form-hint">Sesuai nama yang terdaftar pada Daftar Pemilih Tetap (DPT).</span>
+          </div>
+
+          <div class="form-group">
+            <label for="input-class-name" class="form-label">Kelas</label>
+            <input
+              type="text"
+              id="input-class-name"
+              class="form-input"
+              placeholder="Contoh: XI IPA 2"
+              autocomplete="off"
+              required
+            />
+            <span class="form-hint">Masukkan kelas Anda saat ini (misal: X-A, XI IPA 2, XII IPS 1).</span>
+          </div>
+
+          <div class="form-group">
+            <label for="input-token-code" class="form-label">Kode Token Pemilihan</label>
+            <input
+              type="text"
+              id="input-token-code"
+              class="form-input form-input-code"
+              placeholder="PSM-XXXXX-XXXXX"
+              autocomplete="off"
+              spellcheck="false"
+              required
+            />
+            <span class="form-hint">Otomatis terisi jika memindai QR Code, atau ketik manual.</span>
+          </div>
+
+          <button type="submit" id="btn-verify-submit" class="btn btn-primary btn-full">
+            VERIFIKASI &amp; MASUK BILIK SUARA
+          </button>
+        </form>
+
+        <div class="text-center mt-3">
+          <a href="../index.html" style="font-size: 0.875rem; color: var(--color-muted-gray); text-decoration: underline;">
+            &larr; Kembali ke Halaman Utama
+          </a>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <span>&copy; 2026 PASMANTAB — Paskibra MAN 4 Banjar</span>
+      <span>ONE MEMBER. ONE VOTE. ONE RESPONSIBILITY.</span>
+    </div>
+  </footer>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/supabase-client.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/voting-engine.js"></script>
+  <script src="../js/voter-flow.js"></script>
+</body>
+</html>

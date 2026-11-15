@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PASMANTAB e-VOTING 2026 — Paskibra MAN 4 Banjar</title>
+  <link rel="stylesheet" href="./css/tokens.css" />
+  <link rel="stylesheet" href="./css/main.css" />
+  <link rel="stylesheet" href="./css/voter.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body data-page="landing">
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="./index.html" class="brand-lockup">
+        <img src="./assets/logo-pasmantab.png" alt="Logo PASMANTAB" class="brand-logo" />
+        <div>
+          <div class="brand-title">PASMANTAB e-VOTING</div>
+          <div class="brand-subtitle">PASKIBRA MAN 4 BANJAR</div>
+        </div>
+      </a>
+      <span id="election-status-badge" class="badge badge-neutral">
+        <span class="badge-dot"></span>
+        <span>Memuat Status...</span>
+      </span>
+    </div>
+  </header>
+
+  <main>
+    <div class="container-narrow">
+      <div id="setup-alert" class="alert alert-error hidden"></div>
+
+      <section class="card text-center">
+        <span id="period-label" class="badge badge-neutral mb-2">PERIODE KEPENGURUSAN 2026/2027</span>
+        <h1 style="font-size: 1.75rem; margin-bottom: 0.45rem;">
+          PEMILIHAN KETUA PASKIBRA
+        </h1>
+        <p style="font-weight: 700; color: var(--color-burgundy); letter-spacing: 0.06em; font-size: 0.875rem;">
+          ONE MEMBER. ONE VOTE.
+        </p>
+        <p class="text-muted mt-2" style="font-size: 0.9375rem;">
+          Platform pemungutan suara elektronik resmi Paskibra MAN 4 Banjar. Gunakan Nama Lengkap, Kelas, dan Token Pemilihan bersama dari panitia.
+        </p>
+
+        <p id="schedule-info" class="text-muted mt-2 hidden" style="font-size: 0.8125rem;"></p>
+
+        <div class="mt-3">
+          <a id="btn-start-vote" href="./vote/verify.html" class="btn btn-primary btn-full hidden">
+            MULAI MEMILIH
+          </a>
+          <div id="closed-notice" class="alert alert-warning text-center hidden" style="justify-content:center; margin-bottom:0;"></div>
+        </div>
+      </section>
+
+      <div id="public-results-section" class="hidden"></div>
+
+      <section class="card mt-3">
+        <h2 style="font-size: 1.125rem; margin-bottom: 1rem;">Tata Cara Pemungutan Suara</h2>
+        <ol style="padding-left: 1.25rem; color: var(--color-text-secondary); font-size: 0.9375rem; display: grid; gap: 0.65rem;">
+          <li>Masukkan <strong>Nama Lengkap</strong> dan <strong>Kelas</strong> Anda sesuai Daftar Pemilih Tetap (DPT).</li>
+          <li>Pindai <strong>QR Code Token Pemilihan</strong> menggunakan kamera HP atau masukkan kode token aktif dari panitia.</li>
+          <li>Pilih <strong>1 (satu) Calon Ketua Paskibra</strong> sesuai hati nurani Anda.</li>
+          <li>Periksa kembali pilihan Anda pada halaman konfirmasi sebelum mengirim suara.</li>
+        </ol>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <span>&copy; 2026 PASMANTAB — Paskibra MAN 4 Banjar</span>
+      <div style="display:flex; gap:1rem; align-items:center;">
+        <span>ONE MEMBER. ONE VOTE. ONE RESPONSIBILITY.</span>
+        <a href="./admin/login.html" style="color:var(--color-muted-gray); text-decoration:underline;">Portal Panitia</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="./js/config.js"></script>
+  <script src="./js/supabase-client.js"></script>
+  <script src="./js/utils.js"></script>
+  <script src="./js/voter-flow.js"></script>
+</body>
+</html>

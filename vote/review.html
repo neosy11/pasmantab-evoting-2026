@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tinjauan Surat Suara — PASMANTAB e-VOTING 2026</title>
+  <link rel="stylesheet" href="../css/tokens.css" />
+  <link rel="stylesheet" href="../css/main.css" />
+  <link rel="stylesheet" href="../css/voter.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body data-page="review">
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="brand-lockup">
+        <img src="../assets/logo-pasmantab.svg" alt="Logo PASMANTAB" class="brand-logo" />
+        <div>
+          <div class="brand-title">PASMANTAB e-VOTING</div>
+          <div class="brand-subtitle">PASKIBRA MAN 4 BANJAR</div>
+        </div>
+      </div>
+      <span class="badge badge-neutral">Tahap 3 dari 3</span>
+    </div>
+  </header>
+
+  <main>
+    <div class="container-narrow">
+      <nav class="vote-stepper" aria-label="Tahapan Pemilihan">
+        <div class="step-item done"><span class="step-num">&checkmark;</span><br />Verifikasi</div>
+        <div class="step-item done"><span class="step-num">&checkmark;</span><br />Pilih Ketua</div>
+        <div class="step-item active"><span class="step-num">3</span><br />Konfirmasi</div>
+      </nav>
+
+      <section class="card">
+        <h1 style="font-size: 1.45rem; margin-bottom: 0.35rem;">Tinjauan Surat Suara Anda</h1>
+        <p class="text-muted mb-3" style="font-size: 0.9rem;">
+          Periksa kembali pilihan Calon Ketua Paskibra di bawah ini. Surat suara akan direkam secara anonim tanpa menyertakan nama maupun kelas Anda.
+        </p>
+
+        <div id="review-alert" class="alert hidden" role="alert"></div>
+
+        <div class="mb-3">
+          <div style="font-size: 0.8125rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-burgundy); margin-bottom: 0.4rem;">
+            Pilihan Calon Ketua Paskibra
+          </div>
+          <div id="review-chairperson-box" class="review-choice-card"></div>
+        </div>
+
+        <div class="alert alert-warning">
+          <div>
+            <strong>Perhatian — Pilihan Bersifat Final:</strong><br />
+            Setelah Anda menekan tombol <strong>KONFIRMASI DAN KIRIM SUARA</strong>, pilihan tidak dapat diubah atau dibatalkan dan hak suara Anda dinyatakan telah digunakan.
+          </div>
+        </div>
+
+        <label style="display:flex; align-items:flex-start; gap:0.65rem; font-size:0.875rem; cursor:pointer; margin-bottom:1.5rem;">
+          <input type="checkbox" id="checkbox-final-consent" style="margin-top:0.25rem; width:18px; height:18px; accent-color:var(--color-primary-red);" />
+          <span>Saya telah memeriksa pilihan saya dan menyetujui untuk mengirimkan suara secara final.</span>
+        </label>
+
+        <div class="ballot-action-bar" style="margin-top:0;">
+          <a href="./chairperson.html" class="btn btn-outline">&larr; KEMBALI</a>
+          <button type="button" id="btn-submit-ballot" class="btn btn-primary" disabled>
+            KONFIRMASI DAN KIRIM SUARA
+          </button>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <span>&copy; 2026 PASMANTAB — Paskibra MAN 4 Banjar</span>
+      <span>ONE MEMBER. ONE VOTE. ONE RESPONSIBILITY.</span>
+    </div>
+  </footer>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/supabase-client.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/voter-flow.js"></script>
+</body>
+</html>

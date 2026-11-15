@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Panitia — PASMANTAB e-VOTING 2026</title>
+  <link rel="stylesheet" href="../css/tokens.css" />
+  <link rel="stylesheet" href="../css/main.css" />
+  <link rel="stylesheet" href="../css/admin.css" />
+  <!-- Libraries via CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+  <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
+
+  <div class="admin-layout">
+    <!-- SIDEBAR 10 MENU -->
+    <aside id="admin-sidebar" class="admin-sidebar" aria-label="Menu Navigasi Admin">
+      <div class="sidebar-header">
+        <img src="../assets/logo-pasmantab.png" alt="Logo PASMANTAB" style="width:36px;height:36px;" />
+        <div>
+          <div class="sidebar-brand-name">PASMANTAB</div>
+          <div class="sidebar-brand-sub">Admin Panel 2026</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button type="button" class="nav-item active" data-tab="overview">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <span>1. Overview</span>
+        </button>
+
+        <button type="button" class="nav-item" data-tab="candidates">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span>2. Candidates</span>
+        </button>
+
+        <button type="button" class="nav-item" data-tab="voters">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>
+          <span>3. Voters (DPT)</span>
+        </button>
+
+        <button type="button" class="nav-item" data-tab="tokens">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3z"/><path d="M17 17h4v4h-4z"/></svg>
+          <span>4. Voting Tokens</span>
+        </button>
+
+        <button type="button" class="nav-item" data-tab="election-control">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+          <span>5. Election Control</span>
+        </button>
+
+        <button type="button" class="nav-item" data-tab="results">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          <span>6. Results</span>
+        </button>
+
+        <button type="button" class="nav-item" data-tab="reports">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <span>7. Reports</span>
+        </button>
+
+        <button type="button" class="nav-item" data-tab="audit-logs">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span>8. Audit Logs</span>
+        </button>
+
+        <button type="button" class="nav-item" data-tab="settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span>9. Settings</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button type="button" id="btn-admin-logout" class="nav-item" style="color:#FCA5A5;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          <span>10. Logout</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- KONTEN UTAMA DASHBOARD -->
+    <div class="admin-main">
+      <header class="admin-topbar">
+        <div style="display:flex; align-items:center; gap:0.75rem;">
+          <button type="button" id="btn-mobile-menu" class="mobile-menu-btn" aria-label="Buka Menu">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+          <div>
+            <strong id="topbar-page-title" style="font-family:var(--font-heading); font-size:1.05rem;">Overview Pemilihan</strong>
+            <div id="topbar-admin-name" style="font-size:0.78rem; color:var(--color-muted-gray);">Memuat profil panitia...</div>
+          </div>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:0.75rem;">
+          <span id="topbar-election-status" class="badge badge-neutral">Memuat...</span>
+          <a href="../index.html" target="_blank" class="btn btn-outline btn-sm">Lihat Web Pemilih</a>
+        </div>
+      </header>
+
+      <div class="admin-content">
+        <div id="global-admin-alert" class="alert hidden" role="alert"></div>
+
+        <!-- ================================================================
+             TAB 1: OVERVIEW
+             ================================================================ -->
+        <section id="tab-overview" class="admin-tab-panel">
+          <div class="section-header-row">
+            <div>
+              <h1 style="font-size:1.45rem;">Ringkasan Pemilihan</h1>
+              <p class="text-muted" style="font-size:0.875rem;">Pantauan langsung tingkat partisipasi anggota Paskibra MAN 4 Banjar.</p>
+            </div>
+            <button type="button" id="btn-refresh-overview" class="btn btn-outline btn-sm">Muat Ulang Data</button>
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-label">Total Pemilih Tetap (DPT Sah)</div>
+              <div class="stat-value" id="stat-total-voters">0</div>
+              <div class="stat-sub">Anggota berstatus memenuhi syarat</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-label">Sudah Menggunakan Suara</div>
+              <div class="stat-value" id="stat-completed-voters" style="color:var(--color-success-text);">0</div>
+              <div class="stat-sub">Surat suara masuk tercatat</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-label">Belum Memilih</div>
+              <div class="stat-value" id="stat-remaining-voters">0</div>
+              <div class="stat-sub">Sisa pemilih aktif</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-label">Tingkat Partisipasi</div>
+              <div class="stat-value" id="stat-participation-rate" style="color:var(--color-primary-red);">0%</div>
+              <div class="stat-sub">Dari seluruh DPT sah</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+              <h2 style="font-size:1.05rem;">Grafik Progres Kehadiran Pemilih</h2>
+              <span id="overview-progress-text" style="font-size:0.875rem; font-weight:700;">0 / 0 Anggota</span>
+            </div>
+            <div class="progress-track">
+              <div id="overview-progress-bar" class="progress-fill" style="width:0%;"></div>
+            </div>
+            <p class="text-muted mt-2" style="font-size:0.8125rem;">
+              Demi menjaga netralitas selama pemungutan suara berlangsung, rincian perolehan per kandidat hanya ditampilkan pada menu <strong>Results</strong>.
+            </p>
+          </div>
+        </section>
+
+        <!-- ================================================================
+             TAB 2: CANDIDATES
+             ================================================================ -->
+        <section id="tab-candidates" class="admin-tab-panel hidden">
+          <div class="section-header-row">
+            <div>
+              <h1 style="font-size:1.45rem;">Manajemen Calon Ketua Paskibra</h1>
+              <p class="text-muted" style="font-size:0.875rem;">Kelola profil, foto, visi, misi, dan program unggulan kandidat Ketua.</p>
+            </div>
+            <button type="button" id="btn-open-add-candidate" class="btn btn-primary btn-sm">+ Tambah Calon Ketua</button>
+          </div>
+
+          <div id="candidates-list-admin" class="grid-2">
+            <p class="text-muted">Memuat data kandidat...</p>
+          </div>
+        </section>
+
+        <!-- ================================================================
+             TAB 3: VOTERS (DPT)
+             ================================================================ -->
+        <section id="tab-voters" class="admin-tab-panel hidden">
+          <div class="section-header-row">
+            <div>
+              <h1 style="font-size:1.45rem;">Daftar Pemilih Tetap (DPT)</h1>
+              <p class="text-muted" style="font-size:0.875rem;">Kelola anggota berdasarkan Nama Lengkap &amp; Kelas. Pilihan kandidat pemilih tidak pernah dicatat di sini.</p>
+            </div>
+            <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+              <button type="button" id="btn-open-import-csv" class="btn btn-outline btn-sm">Impor CSV Anggota</button>
+              <button type="button" id="btn-open-add-voter" class="btn btn-primary btn-sm">+ Tambah Pemilih</button>
+            </div>
+          </div>
+
+          <div class="card mb-2" style="padding:1rem;">
+            <div style="display:flex; gap:0.75rem; flex-wrap:wrap; align-items:center; justify-content:space-between;">
+              <input type="text" id="voter-search-input" class="form-input" style="max-width:340px; min-height:42px;" placeholder="Cari nama atau kelas anggota..." />
+              <div id="voter-count-summary" style="font-size:0.85rem; color:var(--color-muted-gray);">Total: 0 anggota</div>
+            </div>
+          </div>
+
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Nama Lengkap</th>
+                  <th>Kelas</th>
+                  <th>Kelayakan</th>
+                  <th>Status Suara</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="voters-table-body">
+                <tr><td colspan="5" class="text-center text-muted">Memuat daftar pemilih...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ================================================================
+             TAB 4: VOTING TOKENS (SHARED TOKEN + EXPIRY CONTROL + QR CODE)
+             ================================================================ -->
+        <section id="tab-tokens" class="admin-tab-panel hidden">
+          <div class="section-header-row">
+            <div>
+              <h1 style="font-size:1.45rem;">Token Pemilihan Bersama &amp; QR Code</h1>
+              <p class="text-muted" style="font-size:0.875rem;">Terbitkan 1 token bersama untuk seluruh pemilih, atur waktu kedaluwarsa, atau cabut sewaktu-waktu.</p>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <!-- Panel Buat / Kontrol Token -->
+            <div class="card">
+              <h2 style="font-size:1.1rem; margin-bottom:0.75rem;">Buat Token Pemilihan Baru</h2>
+              <p class="text-muted mb-2" style="font-size:0.85rem;">
+                Membuat token baru akan otomatis mencabut token aktif sebelumnya. Token mentah hanya muncul <strong>satu kali</strong> setelah dibuat.
+              </p>
+
+              <form id="form-generate-token">
+                <div class="form-group">
+                  <label for="token-label-input" class="form-label">Keterangan Token</label>
+                  <input type="text" id="token-label-input" class="form-input" value="Token Utama Musyawarah Paskibra" required />
+                </div>
+
+                <div class="form-group">
+                  <label for="token-duration-select" class="form-label">Masa Berlaku (Kedaluwarsa Otomatis)</label>
+                  <select id="token-duration-select" class="form-input">
+                    <option value="30">30 Menit dari sekarang</option>
+                    <option value="60">1 Jam dari sekarang</option>
+                    <option value="120" selected>2 Jam dari sekarang</option>
+                    <option value="240">4 Jam dari sekarang</option>
+                    <option value="480">8 Jam dari sekarang</option>
+                    <option value="1440">24 Jam (1 Hari)</option>
+                  </select>
+                </div>
+
+                <button type="submit" id="btn-generate-token" class="btn btn-primary btn-full">
+                  BUAT TOKEN &amp; QR CODE BARU
+                </button>
+              </form>
+
+              <hr style="border:none; border-top:1px solid var(--color-border); margin:1.5rem 0;" />
+
+              <h3 style="font-size:1rem; margin-bottom:0.5rem;">Status Token di Database</h3>
+              <div id="active-token-metadata-box" class="text-muted" style="font-size:0.875rem;">
+                Memuat status token...
+              </div>
+            </div>
+
+            <!-- Panel Poster QR Code Siap Tampil / Cetak -->
+            <div class="card">
+              <h2 style="font-size:1.1rem; margin-bottom:0.75rem;">Poster QR Code TPS</h2>
+              <div id="qr-empty-state" class="alert alert-info">
+                Klik <strong>BUAT TOKEN &amp; QR CODE BARU</strong> di samping untuk menampilkan QR Code yang dapat dipindai oleh seluruh anggota Paskibra.
+              </div>
+
+              <div id="qr-print-area" class="qr-poster-box hidden">
+                <img src="../assets/logo-pasmantab.svg" alt="Logo PASMANTAB" style="width:48px;height:48px;margin:0 auto 0.5rem;" />
+                <div style="font-family:var(--font-heading); font-weight:800; color:var(--color-burgundy); font-size:1.05rem;">
+                  PASMANTAB e-VOTING 2026
+                </div>
+                <div style="font-size:0.75rem; font-weight:600; color:var(--color-muted-gray); letter-spacing:0.05em;">
+                  PASKIBRA MAN 4 BANJAR
+                </div>
+
+                <div id="qrcode-canvas" class="qr-canvas-holder"></div>
+
+                <div style="font-size:0.75rem; color:var(--color-muted-gray);">KODE TOKEN PEMILIHAN:</div>
+                <div id="qr-raw-token-text" class="token-display-code">PSM-XXXXX-XXXXX</div>
+                <div id="qr-expiry-text" style="font-size:0.8125rem; font-weight:600; color:var(--color-danger-text); margin-top:0.4rem;">
+                  Berlaku hingga: -
+                </div>
+                <p style="font-size:0.75rem; color:var(--color-muted-gray); margin-top:0.65rem;">
+                  Pindai QR Code ini pada halaman verifikasi menggunakan Nama Lengkap dan Kelas Anda.
+                </p>
+              </div>
+
+              <div id="qr-print-actions" class="mt-2 hidden">
+                <button type="button" id="btn-print-qr" class="btn btn-burgundy btn-full">
+                  Cetak Poster QR Code
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================================================================
+             TAB 5: ELECTION CONTROL
+             ================================================================ -->
+        <section id="tab-election-control" class="admin-tab-panel hidden">
+          <div class="section-header-row">
+            <div>
+              <h1 style="font-size:1.45rem;">Kontrol Tahapan &amp; Jadwal Pemilihan</h1>
+              <p class="text-muted" style="font-size:0.875rem;">Atur status pemilihan dan rentang waktu pemungutan suara. Setiap perubahan dicatat di Audit Log.</p>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="card">
+              <h2 style="font-size:1.1rem; margin-bottom:1rem;">Aksi Cepat Status Pemilihan</h2>
+              <div style="display:grid; gap:0.75rem;">
+                <button type="button" class="btn btn-outline js-status-action" data-target-status="SETUP">
+                  1. Mode Persiapan (SETUP)
+                </button>
+                <button type="button" class="btn btn-outline js-status-action" data-target-status="SCHEDULED">
+                  2. Terjadwal (SCHEDULED)
+                </button>
+                <button type="button" class="btn btn-primary js-status-action" data-target-status="OPEN">
+                  3. BUKA PEMILIHAN SEKARANG (OPEN)
+                </button>
+                <button type="button" class="btn btn-burgundy js-status-action" data-target-status="CLOSED">
+                  4. TUTUP PEMILIHAN (CLOSED)
+                </button>
+                <button type="button" class="btn btn-outline js-status-action" data-target-status="RESULTS_PUBLISHED" style="border-color:var(--color-success-border); color:var(--color-success-text);">
+                  5. SAHKAN &amp; PUBLIKASIKAN HASIL (RESULTS_PUBLISHED)
+                </button>
+              </div>
+            </div>
+
+            <div class="card">
+              <h2 style="font-size:1.1rem; margin-bottom:1rem;">Pengaturan Jadwal Mulai &amp; Berakhir</h2>
+              <form id="form-election-schedule">
+                <div class="form-group">
+                  <label for="input-start-at" class="form-label">Tanggal &amp; Jam Mulai</label>
+                  <input type="datetime-local" id="input-start-at" class="form-input" />
+                </div>
+
+                <div class="form-group">
+                  <label for="input-end-at" class="form-label">Tanggal &amp; Jam Berakhir</label>
+                  <input type="datetime-local" id="input-end-at" class="form-input" />
+                </div>
+
+                <button type="submit" class="btn btn-burgundy btn-full">
+                  SIMPAN JADWAL PEMILIHAN
+                </button>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================================================================
+             TAB 6: RESULTS
+             ================================================================ -->
+        <section id="tab-results" class="admin-tab-panel hidden">
+          <div class="section-header-row">
+            <div>
+              <h1 style="font-size:1.45rem;">Rekapitulasi Perolehan Suara Ketua</h1>
+              <p class="text-muted" style="font-size:0.875rem;">Hasil resmi pemilihan Ketua Paskibra MAN 4 Banjar.</p>
+            </div>
+            <button type="button" id="btn-refresh-results" class="btn btn-outline btn-sm">Hitung Ulang Suara</button>
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-label">Total Suara Sah Masuk</div>
+              <div class="stat-value" id="res-total-valid">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Total Pemilih Tetap</div>
+              <div class="stat-value" id="res-total-dpt">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Persentase Partisipasi</div>
+              <div class="stat-value" id="res-participation">0%</div>
+            </div>
+          </div>
+
+          <div class="card" id="results-breakdown-card">
+            <p class="text-muted">Memuat rincian suara...</p>
+          </div>
+        </section>
+
+        <!-- ================================================================
+             TAB 7: REPORTS
+             ================================================================ -->
+        <section id="tab-reports" class="admin-tab-panel hidden">
+          <div class="section-header-row">
+            <div>
+              <h1 style="font-size:1.45rem;">Laporan &amp; Berita Acara Pemilihan</h1>
+              <p class="text-muted" style="font-size:0.875rem;">Unduh dokumen rekapitulasi resmi lengkap dengan tanggal dan waktu pembuatan.</p>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="card">
+              <h2 style="font-size:1.1rem; margin-bottom:0.5rem;">Rekapitulasi Spreadsheet (CSV)</h2>
+              <p class="text-muted mb-3" style="font-size:0.875rem;">
+                Berisi tabel nomor urut kandidat, nama lengkap, jumlah perolehan suara, persentase, serta ringkasan partisipasi DPT.
+              </p>
+              <button type="button" id="btn-download-csv" class="btn btn-outline btn-full">
+                Unduh Laporan CSV
+              </button>
+            </div>
+
+            <div class="card">
+              <h2 style="font-size:1.1rem; margin-bottom:0.5rem;">Berita Acara Hasil Pemilihan (PDF)</h2>
+              <p class="text-muted mb-3" style="font-size:0.875rem;">
+                Dokumen resmi siap cetak berisi kop organisasi, waktu pengesahan, tabel hasil pemilihan Ketua, dan kolom tanda tangan panitia.
+              </p>
+              <button type="button" id="btn-download-pdf" class="btn btn-primary btn-full">
+                Unduh Berita Acara PDF
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================================================================
+             TAB 8: AUDIT LOGS
+             ================================================================ -->
+        <section id="tab-audit-logs" class="admin-tab-panel hidden">
+          <div class="section-header-row">
+            <div>
+              <h1 style="font-size:1.45rem;">Audit Trail Aktivitas Panitia</h1>
+              <p class="text-muted" style="font-size:0.875rem;">Catatan permanen seluruh tindakan administratif (tidak pernah mencatat pilihan kandidat pemilih).</p>
+            </div>
+            <button type="button" id="btn-refresh-audit" class="btn btn-outline btn-sm">Muat Ulang Log</button>
+          </div>
+
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Waktu</th>
+                  <th>Aksi</th>
+                  <th>Entitas</th>
+                  <th>Detail Metadata</th>
+                </tr>
+              </thead>
+              <tbody id="audit-logs-body">
+                <tr><td colspan="4" class="text-center text-muted">Memuat log audit...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ================================================================
+             TAB 9: SETTINGS
+             ================================================================ -->
+        <section id="tab-settings" class="admin-tab-panel hidden">
+          <div class="section-header-row">
+            <div>
+              <h1 style="font-size:1.45rem;">Pengaturan Organisasi &amp; Periode</h1>
+              <p class="text-muted" style="font-size:0.875rem;">Sesuaikan identitas organisasi dan label periode kepengurusan pada halaman publik.</p>
+            </div>
+          </div>
+
+          <div class="card" style="max-width:600px;">
+            <form id="form-org-settings">
+              <div class="form-group">
+                <label for="setting-org-name" class="form-label">Nama Organisasi</label>
+                <input type="text" id="setting-org-name" class="form-input" required />
+              </div>
+
+              <div class="form-group">
+                <label for="setting-period-label" class="form-label">Periode Kepengurusan</label>
+                <input type="text" id="setting-period-label" class="form-input" placeholder="2026/2027" required />
+              </div>
+
+              <button type="submit" class="btn btn-burgundy">Simpan Pengaturan</button>
+            </form>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       MODAL 1: TAMBAH / EDIT KANDIDAT KETUA
+       ====================================================================== -->
+  <div id="modal-candidate" class="modal-overlay hidden" role="dialog" aria-modal="true">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 id="modal-candidate-title" style="font-size:1.15rem;">Tambah Calon Ketua</h2>
+        <button type="button" class="btn btn-outline btn-sm js-close-modal" data-modal="modal-candidate">Tutup</button>
+      </div>
+      <form id="form-candidate">
+        <input type="hidden" id="cand-id" />
+        <div class="form-group">
+          <label for="cand-number" class="form-label">Nomor Urut</label>
+          <input type="number" id="cand-number" class="form-input" min="1" max="99" required />
+        </div>
+        <div class="form-group">
+          <label for="cand-name" class="form-label">Nama Lengkap Calon Ketua</label>
+          <input type="text" id="cand-name" class="form-input" required />
+        </div>
+        <div class="form-group">
+          <label for="cand-photo-file" class="form-label">Unggah Foto Kandidat (JPG/PNG, Opsional)</label>
+          <input type="file" id="cand-photo-file" class="form-input" accept="image/png,image/jpeg,image/webp" style="padding:0.55rem;" />
+          <input type="hidden" id="cand-photo-url" />
+          <span class="form-hint">Jika tidak diunggah, sistem menampilkan inisial nama kandidat secara otomatis.</span>
+        </div>
+        <div class="form-group">
+          <label for="cand-vision" class="form-label">Visi</label>
+          <textarea id="cand-vision" class="form-input" rows="2" required></textarea>
+        </div>
+        <div class="form-group">
+          <label for="cand-mission" class="form-label">Misi</label>
+          <textarea id="cand-mission" class="form-input" rows="4" required></textarea>
+        </div>
+        <div class="form-group">
+          <label for="cand-program" class="form-label">Program Unggulan (Opsional)</label>
+          <textarea id="cand-program" class="form-input" rows="2"></textarea>
+        </div>
+        <label style="display:flex; align-items:center; gap:0.5rem; font-size:0.875rem;">
+          <input type="checkbox" id="cand-active" checked style="width:18px;height:18px;accent-color:var(--color-primary-red);" />
+          <span>Kandidat Aktif (Ditampilkan di Surat Suara)</span>
+        </label>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-outline js-close-modal" data-modal="modal-candidate">Batal</button>
+          <button type="submit" id="btn-save-candidate" class="btn btn-primary">Simpan Kandidat</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       MODAL 2: TAMBAH / EDIT PEMILIH (DPT)
+       ====================================================================== -->
+  <div id="modal-voter" class="modal-overlay hidden" role="dialog" aria-modal="true">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 id="modal-voter-title" style="font-size:1.15rem;">Tambah Anggota Pemilih</h2>
+        <button type="button" class="btn btn-outline btn-sm js-close-modal" data-modal="modal-voter">Tutup</button>
+      </div>
+      <form id="form-voter">
+        <input type="hidden" id="voter-id" />
+        <div class="form-group">
+          <label for="voter-fullname" class="form-label">Nama Lengkap Anggota</label>
+          <input type="text" id="voter-fullname" class="form-input" placeholder="Contoh: Ahmad Fauzan" required />
+        </div>
+        <div class="form-group">
+          <label for="voter-class" class="form-label">Kelas</label>
+          <input type="text" id="voter-class" class="form-input" placeholder="Contoh: XI IPA 1" required />
+        </div>
+        <label style="display:flex; align-items:center; gap:0.5rem; font-size:0.875rem;">
+          <input type="checkbox" id="voter-eligible" checked style="width:18px;height:18px;accent-color:var(--color-primary-red);" />
+          <span>Memenuhi Syarat Memilih (Eligible)</span>
+        </label>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-outline js-close-modal" data-modal="modal-voter">Batal</button>
+          <button type="submit" class="btn btn-primary">Simpan Data Pemilih</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       MODAL 3: IMPOR CSV DAFTAR PEMILIH
+       ====================================================================== -->
+  <div id="modal-import-csv" class="modal-overlay hidden" role="dialog" aria-modal="true">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 style="font-size:1.15rem;">Impor Daftar Pemilih (CSV)</h2>
+        <button type="button" class="btn btn-outline btn-sm js-close-modal" data-modal="modal-import-csv">Tutup</button>
+      </div>
+      <p class="text-muted mb-2" style="font-size:0.85rem;">
+        Unggah file <code>.csv</code> dengan format 2 kolom: <strong>Nama Lengkap, Kelas</strong> (pisahkan dengan koma atau titik koma).
+      </p>
+      <div class="alert alert-info" style="font-size:0.8rem;">
+        Contoh isi file CSV:<br />
+        Nama Lengkap,Kelas<br />
+        Muhammad Rizky,XII IPA 1<br />
+        Siti Aisyah,XI IPS 2
+      </div>
+      <div class="form-group">
+        <input type="file" id="csv-file-input" class="form-input" accept=".csv,text/csv" style="padding:0.55rem;" />
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-outline js-close-modal" data-modal="modal-import-csv">Batal</button>
+        <button type="button" id="btn-process-csv" class="btn btn-primary">Proses Impor CSV</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       MODAL 4: UBAH WAKTU KEDALUWARSA TOKEN AKTIF
+       ====================================================================== -->
+  <div id="modal-token-expiry" class="modal-overlay hidden" role="dialog" aria-modal="true">
+    <div class="modal-box" style="max-width:440px;">
+      <div class="modal-header">
+        <h2 style="font-size:1.1rem;">Ubah Waktu Kedaluwarsa Token</h2>
+        <button type="button" class="btn btn-outline btn-sm js-close-modal" data-modal="modal-token-expiry">Tutup</button>
+      </div>
+      <form id="form-update-expiry">
+        <input type="hidden" id="expiry-token-id" />
+        <div class="form-group">
+          <label for="new-expiry-datetime" class="form-label">Waktu Kedaluwarsa Baru</label>
+          <input type="datetime-local" id="new-expiry-datetime" class="form-input" required />
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-outline js-close-modal" data-modal="modal-token-expiry">Batal</button>
+          <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/supabase-client.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/admin-dashboard.js"></script>
+</body>
+</html>

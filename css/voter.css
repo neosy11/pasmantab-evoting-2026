@@ -1,0 +1,271 @@
+/* ============================================================================
+   PASMANTAB e-VOTING 2026 — VOTER INTERFACE COMPONENTS
+   ============================================================================ */
+
+/* Progress Stepper */
+.vote-stepper {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.step-item {
+  background-color: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 0.65rem 0.5rem;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-muted-gray);
+}
+
+.step-item .step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background-color: var(--color-soft-gray);
+  color: var(--color-muted-gray);
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.step-item.active {
+  border-color: var(--color-primary-red);
+  background-color: var(--color-burgundy-tint);
+  color: var(--color-burgundy);
+}
+
+.step-item.active .step-num {
+  background-color: var(--color-primary-red);
+  color: var(--color-white);
+}
+
+.step-item.done {
+  border-color: var(--color-success-border);
+  background-color: var(--color-success-bg);
+  color: var(--color-success-text);
+}
+
+.step-item.done .step-num {
+  background-color: var(--color-success-text);
+  color: var(--color-white);
+}
+
+/* QR Camera Scanner Box */
+.qr-scanner-panel {
+  border: 1.5px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-soft-gray);
+  padding: 1rem;
+  margin-bottom: 1.25rem;
+  text-align: center;
+}
+
+#qr-reader {
+  width: 100%;
+  max-width: 340px;
+  margin: 0.75rem auto 0;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background-color: var(--color-charcoal);
+}
+
+/* Candidate Ballot Grid & Cards */
+.candidates-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+}
+
+@media (min-width: 720px) {
+  .candidates-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.candidate-card {
+  background-color: var(--color-white);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.candidate-card:hover {
+  border-color: #D4D4D8;
+  box-shadow: var(--shadow-sm);
+}
+
+.candidate-card.selected {
+  border-color: var(--color-primary-red);
+  background-color: var(--color-burgundy-tint);
+  box-shadow: var(--shadow-md);
+}
+
+.candidate-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.125rem;
+}
+
+.candidate-photo-wrap {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  flex-shrink: 0;
+}
+
+.candidate-photo {
+  width: 76px;
+  height: 76px;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-soft-gray);
+}
+
+.candidate-avatar-fallback {
+  width: 76px;
+  height: 76px;
+  border-radius: var(--radius-md);
+  background-color: var(--color-burgundy);
+  color: var(--color-white);
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.candidate-number-badge {
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  min-width: 30px;
+  height: 30px;
+  padding: 0 0.4rem;
+  border-radius: var(--radius-full);
+  background-color: var(--color-charcoal);
+  color: var(--color-white);
+  font-family: var(--font-heading);
+  font-size: 0.8125rem;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--color-white);
+}
+
+.candidate-card.selected .candidate-number-badge {
+  background-color: var(--color-primary-red);
+}
+
+.candidate-section-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-burgundy);
+  margin-top: 0.875rem;
+  margin-bottom: 0.25rem;
+}
+
+.candidate-text {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  white-space: pre-line;
+}
+
+.candidate-footer {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+}
+
+/* Sticky Action Bar on Mobile Ballot */
+.ballot-action-bar {
+  margin-top: 1.75rem;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .ballot-action-bar {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+/* Review Summary Box */
+.review-choice-card {
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 1.125rem;
+  background-color: var(--color-white);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.review-choice-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+/* Subtle Success Icon Animation */
+.success-icon-circle {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 1.25rem;
+  border-radius: 50%;
+  background-color: var(--color-success-bg);
+  border: 2px solid var(--color-success-border);
+  color: var(--color-success-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: scalePop 320ms ease-out;
+}
+
+@keyframes scalePop {
+  0% {
+    transform: scale(0.82);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Public Results Progress Bar (When RESULTS_PUBLISHED) */
+.result-bar-track {
+  width: 100%;
+  height: 10px;
+  background-color: var(--color-soft-gray);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-top: 0.45rem;
+}
+
+.result-bar-fill {
+  height: 100%;
+  background-color: var(--color-primary-red);
+  border-radius: var(--radius-full);
+  transition: width 400ms ease;
+}

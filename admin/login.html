@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login Panitia — PASMANTAB e-VOTING 2026</title>
+  <link rel="stylesheet" href="../css/tokens.css" />
+  <link rel="stylesheet" href="../css/main.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="../index.html" class="brand-lockup">
+        <img src="../assets/logo-pasmantab.svg" alt="Logo PASMANTAB" class="brand-logo" />
+        <div>
+          <div class="brand-title">PASMANTAB e-VOTING</div>
+          <div class="brand-subtitle">PORTAL PANITIA PEMILIHAN</div>
+        </div>
+      </a>
+      <span class="badge badge-neutral">Akses Terbatas</span>
+    </div>
+  </header>
+
+  <main>
+    <div class="container-narrow" style="max-width: 440px;">
+      <section class="card">
+        <h1 style="font-size: 1.4rem; margin-bottom: 0.35rem;">Masuk Dashboard Panitia</h1>
+        <p class="text-muted mb-3" style="font-size: 0.875rem;">
+          Gunakan akun email dan kata sandi panitia resmi Paskibra MAN 4 Banjar.
+        </p>
+
+        <div id="login-alert" class="alert hidden" role="alert"></div>
+
+        <form id="admin-login-form" novalidate>
+          <div class="form-group">
+            <label for="admin-email" class="form-label">Email Panitia</label>
+            <input
+              type="email"
+              id="admin-email"
+              class="form-input"
+              placeholder="panitia@pasmantab.id"
+              autocomplete="email"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="admin-password" class="form-label">Kata Sandi</label>
+            <input
+              type="password"
+              id="admin-password"
+              class="form-input"
+              placeholder="••••••••"
+              autocomplete="current-password"
+              required
+            />
+          </div>
+
+          <button type="submit" id="btn-admin-login" class="btn btn-burgundy btn-full">
+            MASUK KE DASHBOARD
+          </button>
+        </form>
+
+        <div class="text-center mt-3">
+          <a href="../index.html" style="font-size: 0.85rem; color: var(--color-muted-gray); text-decoration: underline;">
+            &larr; Kembali ke Halaman Utama Pemilih
+          </a>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <span>&copy; 2026 PASMANTAB — Paskibra MAN 4 Banjar</span>
+      <span>ONE MEMBER. ONE VOTE. ONE RESPONSIBILITY.</span>
+    </div>
+  </footer>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/supabase-client.js"></script>
+  <script src="../js/utils.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      const Utils = window.PasmantabUtils;
+      const SbService = window.SupabaseService;
+      const form = document.getElementById("admin-login-form");
+      const btn = document.getElementById("btn-admin-login");
+
+      try {
+        const supabase = SbService.getClient();
+
+        // Jika sudah punya sesi admin aktif, langsung arahkan ke dashboard
+        const { data: sessionData } = await supabase.auth.getSession();
+        if (sessionData && sessionData.session) {
+          const { data: adminRow } = await supabase
+            .from("admin_users")
+            .select("id, is_active")
+            .eq("id", sessionData.session.user.id)
+            .single();
+
+          if (adminRow && adminRow.is_active) {
+            window.location.replace("./dashboard.html");
+            return;
+          }
+        }
+
+        form.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          Utils.hideAlert("login-alert");
+
+          const email = document.getElementById("admin-email").value.trim();
+          const password = document.getElementById("admin-password").value;
+
+          if (!email || !password) {
+            Utils.showAlert("login-alert", "error", "Masukkan email dan kata sandi panitia.");
+            return;
+          }
+
+          btn.disabled = true;
+          btn.textContent = "Memverifikasi Akun...";
+
+          try {
+            const { data: authData, error: authErr } = await supabase.auth.signInWithPassword({
+              email,
+              password
+            });
+            if (authErr) throw authErr;
+
+            // Validasi Role-Based Access Control terhadap tabel admin_users
+            const { data: adminProfile, error: roleErr } = await supabase
+              .from("admin_users")
+              .select("*")
+              .eq("id", authData.user.id)
+              .single();
+
+            if (roleErr || !adminProfile || !adminProfile.is_active) {
+              await supabase.auth.signOut();
+              throw new Error("UNAUTHORIZED_ADMIN");
+            }
+
+            // Catat login ke Audit Log
+            await supabase.from("audit_logs").insert({
+              actor_admin_id: adminProfile.id,
+              action: "ADMIN_LOGIN",
+              target_entity: "admin_users",
+              target_id: adminProfile.id,
+              metadata: { email: adminProfile.email }
+            });
+
+            window.location.replace("./dashboard.html");
+          } catch (err) {
+            const msg = String(err && err.message || "").toLowerCase();
+            if (msg.includes("invalid login credentials")) {
+              Utils.showAlert("login-alert", "error", "Email atau kata sandi panitia salah.");
+            } else {
+              Utils.showAlert("login-alert", "error", SbService.mapFriendlyError(err));
+            }
+            btn.disabled = false;
+            btn.textContent = "MASUK KE DASHBOARD";
+          }
+        });
+      } catch (initErr) {
+        Utils.showAlert("login-alert", "error", SbService.mapFriendlyError(initErr));
+      }
+    });
+  </script>
+</body>
+</html>

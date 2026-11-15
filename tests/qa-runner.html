@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QA & Load Test 80 Pemilih — PASMANTAB e-VOTING 2026</title>
+  <link rel="stylesheet" href="../css/tokens.css" />
+  <link rel="stylesheet" href="../css/main.css" />
+  <link rel="stylesheet" href="../css/admin.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="brand-lockup">
+        <img src="../assets/logo-pasmantab.svg" alt="Logo PASMANTAB" class="brand-logo" />
+        <div>
+          <div class="brand-title">PASMANTAB QA &amp; LOAD TESTER</div>
+          <div class="brand-subtitle">SIMULASI KEAMANAN &amp; 80 PEMILIH BERSAMAAN</div>
+        </div>
+      </div>
+      <a href="../admin/dashboard.html" class="btn btn-outline btn-sm">Kembali ke Admin</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="container">
+      <div id="qa-alert" class="alert hidden" role="alert"></div>
+
+      <section class="card mb-3">
+        <h1 style="font-size:1.4rem; margin-bottom:0.4rem;">Pengujian Keamanan &amp; Beban 80 Pemilih Serentak</h1>
+        <p class="text-muted mb-3" style="font-size:0.9rem;">
+          Alat ini menguji ketahanan database Supabase saat <strong>80 anggota</strong> melakukan verifikasi dan pengiriman suara pada detik yang bersamaan, sekaligus menguji celah keamanan RLS dan <em>race condition</em>.
+        </p>
+
+        <div class="alert alert-info">
+          <div>
+            <strong>Langkah Persiapan Sebelum Klik Jalankan:</strong><br />
+            1. Jalankan <strong>Bagian A</strong> dari file <code>tests/qa_80_voters.sql</code> di SQL Editor Supabase.<br />
+            2. Buat 1 token baru di menu <strong>Voting Tokens</strong> pada Dashboard Admin, lalu tempel kodenya di bawah ini.
+          </div>
+        </div>
+
+        <div class="form-group" style="max-width:420px;">
+          <label for="qa-token-input" class="form-label">Masukkan Kode Token Aktif</label>
+          <input
+            type="text"
+            id="qa-token-input"
+            class="form-input form-input-code"
+            placeholder="PSM-XXXXX-XXXXX"
+          />
+        </div>
+
+        <button type="button" id="btn-run-all-tests" class="btn btn-primary">
+          JALANKAN UJI KEAMANAN &amp; SIMULASI 80 PEMILIH BERSAMAAN
+        </button>
+      </section>
+
+      <!-- Ringkasan Hasil Uji -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Pengujian Keamanan</div>
+          <div class="stat-value" id="qa-sec-score">-</div>
+          <div class="stat-sub">RLS, Anti-Intip Hasil, &amp; Race Condition</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Suara Berhasil Masuk</div>
+          <div class="stat-value" id="qa-load-success" style="color:var(--color-success-text);">0 / 80</div>
+          <div class="stat-sub">Target akurasi 100% (80 suara sah)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Waktu 80 Request</div>
+          <div class="stat-value" id="qa-load-duration">-</div>
+          <div class="stat-sub">Seluruh gelombang paralel</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Rata-rata per Pemilih</div>
+          <div class="stat-value" id="qa-load-avg">-</div>
+          <div class="stat-sub">Waktu proses verifikasi + kirim suara</div>
+        </div>
+      </div>
+
+      <!-- Tabel Rincian Hasil Uji -->
+      <section class="card">
+        <h2 style="font-size:1.1rem; margin-bottom:1rem;">Log Hasil Pengujian Otomatis</h2>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>Skenario Pengujian</th>
+                <th>Target yang Diharapkan</th>
+                <th>Hasil Aktual</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="qa-results-tbody">
+              <tr>
+                <td colspan="5" class="text-center text-muted">Belum dijalankan. Masukkan token aktif lalu klik tombol pengujian di atas.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/supabase-client.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="./qa-runner.js"></script>
+</body>
+</html>

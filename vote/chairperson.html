@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pilih Ketua Paskibra — PASMANTAB e-VOTING 2026</title>
+  <link rel="stylesheet" href="../css/tokens.css" />
+  <link rel="stylesheet" href="../css/main.css" />
+  <link rel="stylesheet" href="../css/voter.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body data-page="chairperson">
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="brand-lockup">
+        <img src="../assets/logo-pasmantab.svg" alt="Logo PASMANTAB" class="brand-logo" />
+        <div>
+          <div class="brand-title">PASMANTAB e-VOTING</div>
+          <div class="brand-subtitle">PASKIBRA MAN 4 BANJAR</div>
+        </div>
+      </div>
+      <span class="badge badge-neutral">Tahap 2 dari 3</span>
+    </div>
+  </header>
+
+  <main>
+    <div class="container">
+      <nav class="vote-stepper" aria-label="Tahapan Pemilihan">
+        <div class="step-item done"><span class="step-num">&checkmark;</span><br />Verifikasi</div>
+        <div class="step-item active"><span class="step-num">2</span><br />Pilih Ketua</div>
+        <div class="step-item"><span class="step-num">3</span><br />Konfirmasi</div>
+      </nav>
+
+      <div class="alert alert-info" id="voter-identity-banner">
+        Memuat identitas pemilih...
+      </div>
+
+      <div id="ballot-alert" class="alert hidden" role="alert"></div>
+
+      <div class="mb-3">
+        <h1 style="font-size: 1.5rem;">Surat Suara: Calon Ketua Paskibra</h1>
+        <p class="text-muted" style="font-size: 0.9375rem;">
+          Pilih <strong>1 (satu)</strong> kandidat Ketua Paskibra MAN 4 Banjar. Pilihan Anda belum dikirim hingga tahap konfirmasi akhir.
+        </p>
+      </div>
+
+      <section id="candidates-container" class="candidates-grid" aria-live="polite">
+        <p class="text-muted">Memuat daftar calon Ketua...</p>
+      </section>
+
+      <div class="ballot-action-bar">
+        <a href="./verify.html" class="btn btn-outline">&larr; Ganti Data Verifikasi</a>
+        <button type="button" id="btn-next-review" class="btn btn-primary" disabled>
+          TINJAU PILIHAN SAYA &rarr;
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <span>&copy; 2026 PASMANTAB — Paskibra MAN 4 Banjar</span>
+      <span>ONE MEMBER. ONE VOTE. ONE RESPONSIBILITY.</span>
+    </div>
+  </footer>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/supabase-client.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/voter-flow.js"></script>
+</body>
+</html>
