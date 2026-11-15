@@ -4,81 +4,176 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PASMANTAB e-VOTING 2026 — Paskibra MAN 4 Banjar</title>
-  <link rel="stylesheet" href="./css/tokens.css" />
-  <link rel="stylesheet" href="./css/main.css" />
-  <link rel="stylesheet" href="./css/voter.css" />
+  <link rel="stylesheet" href="css/tokens.css?v=2" />
+  <link rel="stylesheet" href="css/main.css?v=2" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    .hero-card {
+      position: relative;
+      overflow: hidden;
+      padding: clamp(1.5rem, 4vw, 2.5rem);
+      border-top: 4px solid var(--color-burgundy);
+    }
+    .hero-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+    .period-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.32rem 0.75rem;
+      border-radius: var(--radius-full);
+      background-color: var(--color-burgundy-tint);
+      border: 1px solid var(--color-burgundy-border);
+      color: var(--color-burgundy);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .hero-headline {
+      font-size: clamp(1.55rem, 3.4vw, 2.15rem);
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      color: var(--color-charcoal);
+      margin-bottom: 0.65rem;
+    }
+    .hero-desc {
+      font-size: 0.96rem;
+      color: var(--color-text-secondary);
+      max-width: 62ch;
+      margin-bottom: 1.5rem;
+    }
+    .schedule-banner {
+      background-color: var(--color-canvas);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 0.85rem 1rem;
+      font-size: 0.85rem;
+      color: var(--color-text-secondary);
+      margin-bottom: 1.5rem;
+    }
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+      gap: 0.9rem;
+      margin-top: 1.5rem;
+    }
+    .mini-step-card {
+      background-color: var(--color-white);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 1.1rem;
+      box-shadow: var(--shadow-xs);
+    }
+    .mini-step-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background-color: var(--color-burgundy-tint);
+      color: var(--color-burgundy);
+      font-family: var(--font-heading);
+      font-size: 0.78rem;
+      font-weight: 800;
+      margin-bottom: 0.55rem;
+    }
+    .mini-step-title {
+      font-family: var(--font-heading);
+      font-size: 0.92rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+    .mini-step-text {
+      font-size: 0.8rem;
+      color: var(--color-muted-gray);
+      line-height: 1.5;
+    }
+  </style>
 </head>
 <body data-page="landing">
   <header class="site-header">
     <div class="container header-inner">
-      <a href="./index.html" class="brand-lockup">
-        <img src="./assets/logo-pasmantab.png" alt="Logo PASMANTAB" class="brand-logo" />
+      <a href="index.html" class="brand-lockup">
+        <img src="assets/logo-pasmantab.svg" alt="Logo PASMANTAB" class="brand-logo" />
         <div>
           <div class="brand-title">PASMANTAB e-VOTING</div>
           <div class="brand-subtitle">PASKIBRA MAN 4 BANJAR</div>
         </div>
       </a>
-      <span id="election-status-badge" class="badge badge-neutral">
-        <span class="badge-dot"></span>
-        <span>Memuat Status...</span>
-      </span>
+      <a href="admin/login.html" class="btn btn-outline" style="min-height: 38px; padding: 0.4rem 0.85rem; font-size: 0.8rem;">
+        Portal Panitia
+      </a>
     </div>
   </header>
 
   <main>
-    <div class="container-narrow">
-      <div id="setup-alert" class="alert alert-error hidden"></div>
+    <div class="container" style="max-width: 820px;">
+      <div id="setup-alert" class="alert hidden" role="alert"></div>
 
-      <section class="card text-center">
-        <span id="period-label" class="badge badge-neutral mb-2">PERIODE KEPENGURUSAN 2026/2027</span>
-        <h1 style="font-size: 1.75rem; margin-bottom: 0.45rem;">
-          PEMILIHAN KETUA PASKIBRA
-        </h1>
-        <p style="font-weight: 700; color: var(--color-burgundy); letter-spacing: 0.06em; font-size: 0.875rem;">
-          ONE MEMBER. ONE VOTE.
+      <section class="card hero-card">
+        <div class="hero-top-row">
+          <span id="period-label" class="period-pill">PERIODE KEPENGURUSAN 2026/2027</span>
+          <span id="election-status-badge" class="badge badge-neutral">
+            <span class="badge-dot"></span>
+            <span>Memuat Status...</span>
+          </span>
+        </div>
+
+        <h1 class="hero-headline">Pemilihan Ketua Paskibra MAN 4 Banjar</h1>
+        <p class="hero-desc">
+          Sistem pemungutan suara elektronik resmi yang menjamin asas langsung, bebas, rahasia, dan jujur. Setiap anggota memiliki tepat satu hak suara yang tercatat secara anonim.
         </p>
-        <p class="text-muted mt-2" style="font-size: 0.9375rem;">
-          Platform pemungutan suara elektronik resmi Paskibra MAN 4 Banjar. Gunakan Nama Lengkap, Kelas, dan Token Pemilihan bersama dari panitia.
-        </p>
 
-        <p id="schedule-info" class="text-muted mt-2 hidden" style="font-size: 0.8125rem;"></p>
+        <div id="schedule-info" class="schedule-banner hidden"></div>
 
-        <div class="mt-3">
-          <a id="btn-start-vote" href="./vote/verify.html" class="btn btn-primary btn-full hidden">
-            MULAI MEMILIH
-          </a>
-          <div id="closed-notice" class="alert alert-warning text-center hidden" style="justify-content:center; margin-bottom:0;"></div>
+        <div id="closed-notice" class="alert alert-info hidden"></div>
+
+        <a id="btn-start-vote" href="vote/verify.html" class="btn btn-primary btn-full hidden" style="max-width: 360px; font-size: 0.95rem;">
+          MULAI PEMUNGUTAN SUARA &rarr;
+        </a>
+      </section>
+
+      <!-- Ringkasan 3 Langkah Pemilih -->
+      <section class="steps-grid" aria-label="Alur Pemungutan Suara">
+        <div class="mini-step-card">
+          <div class="mini-step-num">1</div>
+          <div class="mini-step-title">Verifikasi Identitas</div>
+          <p class="mini-step-text">Masukkan Nama Lengkap, Kelas, serta pindai QR Code atau ketik Token dari panitia.</p>
+        </div>
+        <div class="mini-step-card">
+          <div class="mini-step-num">2</div>
+          <div class="mini-step-title">Pilih Calon Ketua</div>
+          <p class="mini-step-text">Pelajari visi, misi, dan program unggulan masing-masing kandidat sebelum menentukan pilihan.</p>
+        </div>
+        <div class="mini-step-card">
+          <div class="mini-step-num">3</div>
+          <div class="mini-step-title">Kirim Suara Rahasia</div>
+          <p class="mini-step-text">Konfirmasi pilihan Anda. Surat suara tersimpan tanpa mengaitkan nama maupun kelas pemilih.</p>
         </div>
       </section>
 
-      <div id="public-results-section" class="hidden"></div>
-
-      <section class="card mt-3">
-        <h2 style="font-size: 1.125rem; margin-bottom: 1rem;">Tata Cara Pemungutan Suara</h2>
-        <ol style="padding-left: 1.25rem; color: var(--color-text-secondary); font-size: 0.9375rem; display: grid; gap: 0.65rem;">
-          <li>Masukkan <strong>Nama Lengkap</strong> dan <strong>Kelas</strong> Anda sesuai Daftar Pemilih Tetap (DPT).</li>
-          <li>Pindai <strong>QR Code Token Pemilihan</strong> menggunakan kamera HP atau masukkan kode token aktif dari panitia.</li>
-          <li>Pilih <strong>1 (satu) Calon Ketua Paskibra</strong> sesuai hati nurani Anda.</li>
-          <li>Periksa kembali pilihan Anda pada halaman konfirmasi sebelum mengirim suara.</li>
-        </ol>
-      </section>
+      <!-- Hasil Resmi Publik (Muncul Otomatis Saat RESULTS_PUBLISHED) -->
+      <section id="public-results-section" class="hidden"></section>
     </div>
   </main>
 
   <footer class="site-footer">
     <div class="container footer-inner">
       <span>&copy; 2026 PASMANTAB — Paskibra MAN 4 Banjar</span>
-      <div style="display:flex; gap:1rem; align-items:center;">
-        <span>ONE MEMBER. ONE VOTE. ONE RESPONSIBILITY.</span>
-        <a href="./admin/login.html" style="color:var(--color-muted-gray); text-decoration:underline;">Portal Panitia</a>
-      </div>
+      <span>ONE MEMBER. ONE VOTE. ONE RESPONSIBILITY.</span>
     </div>
   </footer>
 
-  <script src="./js/config.js"></script>
-  <script src="./js/supabase-client.js"></script>
-  <script src="./js/utils.js"></script>
-  <script src="./js/voter-flow.js"></script>
+  <script src="js/config.js?v=2"></script>
+  <script src="js/supabase-client.js?v=2"></script>
+  <script src="js/utils.js?v=2"></script>
+  <script src="js/voter-flow.js?v=2"></script>
 </body>
 </html>
