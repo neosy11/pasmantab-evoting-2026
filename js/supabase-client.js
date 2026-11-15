@@ -18,13 +18,11 @@
   function getSupabase() {
     if (!isConfigured()) {
       throw new Error(
-        "CONFIG_MISSING: Lengkapi SUPABASE_URL dan SUPABASE_ANON_KEY pada file js/config.js lalu simpan (Ctrl+S)."
+        "CONFIG_MISSING: Lengkapi SUPABASE_URL dan SUPABASE_ANON_KEY pada file js/config.js."
       );
     }
     if (!window.supabase || !window.supabase.createClient) {
-      throw new Error(
-        "Library Supabase gagal dimuat. Periksa koneksi internet Anda lalu muat ulang halaman."
-      );
+      throw new Error("Library Supabase gagal dimuat. Periksa koneksi internet Anda.");
     }
     if (!supabaseInstance) {
       supabaseInstance = window.supabase.createClient(
@@ -47,38 +45,32 @@
     const raw = (err && (err.message || err.details || String(err))) || "";
     const msg = raw.toUpperCase();
 
+    if (msg.includes("DEVICE_ALREADY_VOTED")) {
+      return "Perangkat ini sudah digunakan untuk memberikan suara (1 Perangkat = 1 Suara). Silakan gunakan perangkat pribadi Anda.";
+    }
+    if (msg.includes("INVALID_IDENTITY_INPUT")) {
+      return "Masukkan Nama Lengkap dan Kelas Anda dengan benar.";
+    }
     if (msg.includes("OFFLINE_DEVICE")) {
-      return "Perangkat Anda sedang offline (tidak terhubung ke internet). Sambungkan jaringan lalu coba kembali.";
+      return "Perangkat Anda sedang offline. Sambungkan internet lalu coba kembali.";
     }
     if (msg.includes("RATE_LIMIT_EXCEEDED")) {
-      return "Terlalu banyak percobaan verifikasi yang gagal. Demi keamanan, tunggu 5 menit sebelum mencoba kembali.";
+      return "Terlalu banyak percobaan gagal. Tunggu 5 menit sebelum mencoba kembali.";
     }
-    if (msg.includes("BALLOTS_ARE_IMMUTABLE")) {
-      return "Kotak suara bersifat permanen dan tidak dapat diubah atau dihapus.";
-    }
-    if (msg.includes("AUDIT_LOGS_ARE_IMMUTABLE")) {
-      return "Catatan audit bersifat permanen dan tidak dapat diubah atau dihapus.";
-    }
-    if (msg.includes("CONFIG_MISSING")) {
-      return "Konfigurasi Supabase di file js/config.js belum diisi atau belum disimpan.";
-    }
-    if (msg.includes("EMAIL NOT CONFIRMED")) {
-      return "Email panitia belum dikonfirmasi di Supabase Authentication.";
+    if (msg.includes("BALLOTS_ARE_IMMUTABLE") || msg.includes("AUDIT_LOGS_ARE_IMMUTABLE")) {
+      return "Data kotak suara bersifat permanen dan tidak dapat diubah.";
     }
     if (msg.includes("ELECTION_NOT_OPEN")) {
       return "Pemilihan belum dibuka atau sudah ditutup oleh panitia.";
     }
     if (msg.includes("INVALID_OR_EXPIRED_TOKEN")) {
-      return "Token pemilihan tidak valid, sudah dicabut, atau telah kedaluwarsa.";
-    }
-    if (msg.includes("MEMBER_NOT_FOUND")) {
-      return "Kombinasi Nama Lengkap dan Kelas tidak ditemukan dalam Daftar Pemilih Tetap (DPT).";
+      return "Kode Token tidak valid, sudah dicabut, atau telah kedaluwarsa.";
     }
     if (msg.includes("MEMBER_INELIGIBLE")) {
-      return "Status keanggotaan Anda tidak memenuhi syarat untuk memilih. Hubungi panitia.";
+      return "Status keanggotaan Anda tidak memenuhi syarat untuk memilih.";
     }
     if (msg.includes("ALREADY_VOTED")) {
-      return "Hak suara untuk anggota dengan Nama dan Kelas ini sudah digunakan sebelumnya (1 Anggota = 1 Suara).";
+      return "Nama dan Kelas ini sudah tercatat menggunakan hak suaranya sebelumnya (1 Anggota = 1 Suara).";
     }
     if (msg.includes("INVALID_CANDIDATE")) {
       return "Kandidat yang dipilih tidak valid atau sudah dinonaktifkan.";
