@@ -235,6 +235,21 @@
     const toggleScanBtn = document.getElementById("btn-toggle-scanner");
     const scannerWrapper = document.getElementById("qr-scanner-wrapper");
 
+    // Cek langsung apakah perangkat ini sudah pernah digunakan untuk memilih
+    if (Engine && Engine.isDeviceLockedLocally()) {
+      Utils.showAlert(
+        "verify-alert",
+        "warning",
+        "Perangkat ini sudah digunakan untuk memberikan suara pada pemilihan ini (1 Perangkat = 1 Suara)."
+      );
+      nameInput.disabled = true;
+      classInput.disabled = true;
+      tokenInput.disabled = true;
+      submitBtn.disabled = true;
+      if (toggleScanBtn) toggleScanBtn.disabled = true;
+      return;
+    }
+
     let html5QrInstance = null;
     let isScanning = false;
 
