@@ -1,6 +1,5 @@
 /**
- * PASMANTAB e-VOTING 2026 — Voter Flow Controller
- * Alur 3 Tahap: Verifikasi (Nama + Kelas + Token) -> Pilih Ketua -> Konfirmasi -> Sukses
+ * PASMANTAB e-VOTING 2026 — Voter Flow Controller (Auto-Sync Realtime)
  */
 (function () {
   const Utils = window.PasmantabUtils;
@@ -139,7 +138,6 @@
         settings.end_at || ""
       ].join("|");
 
-      // Lewati render ulang jika tidak ada perubahan status/jadwal
       if (signature === lastRenderedSignature) return;
       lastRenderedSignature = signature;
 
@@ -213,10 +211,8 @@
         await applyLandingSettings(supabase, settings);
       }
 
-      // 1. Muat status pertama kali
       await fetchAndSync();
 
-      // 2. Dengarkan perubahan instan via Supabase Realtime
       const statusChannel = supabase
         .channel("public-election-settings")
         .on(
@@ -235,7 +231,6 @@
         )
         .subscribe();
 
-      // 3. Cadangan pengecekan otomatis tiap 4 detik saat tab aktif
       const pollTimer = setInterval(() => {
         if (document.visibilityState === "visible") {
           fetchAndSync().catch(() => {});
@@ -246,65 +241,6 @@
         clearInterval(pollTimer);
         supabase.removeChannel(statusChannel);
       });
-    } catch (err) {
-      badgeEl.className = "badge badge-closed";
-      badgeEl.innerHTML = '<span class="badge-dot"></span><span>Gangguan Koneksi</span>';
-      Utils.showAlert("setup-alert", "error", SbService.mapFriendlyError(err));
-    }
-  }
-    try {
-      const supabase = SbService.getClient();
-      const { data: settings, error } = await supabase
-        .from("election_settings")
-        .select("*")
-        .eq("id", 1)
-        .single();
-
-      if (error) throw error;
-
-      if (periodEl && settings.period_label) {
-        periodEl.textContent = `PERIODE KEPENGURUSAN ${settings.period_label}`;
-      }
-
-      if (scheduleInfoEl && (settings.start_at || settings.end_at)) {
-        const startText = settings.start_at
-          ? Utils.formatDateTime(settings.start_at)
-          : "Ditentukan panitia";
-        const endText = settings.end_at
-          ? Utils.formatDateTime(settings.end_at)
-          : "Ditentukan panitia";
-        scheduleInfoEl.innerHTML = `Jadwal Pemungutan Suara: <strong>${startText}</strong> s.d. <strong>${endText}</strong>`;
-        scheduleInfoEl.classList.remove("hidden");
-      }
-
-      const effectiveStatus = resolveEffectiveStatus(settings);
-
-      if (effectiveStatus === "OPEN") {
-        badgeEl.className = "badge badge-open";
-        badgeEl.innerHTML = '<span class="badge-dot"></span><span>Sedang Berlangsung</span>';
-        startBtnEl.classList.remove("hidden");
-      } else if (effectiveStatus === "SCHEDULED" || effectiveStatus === "SETUP") {
-        badgeEl.className = "badge badge-scheduled";
-        badgeEl.innerHTML = '<span class="badge-dot"></span><span>Belum Dimulai</span>';
-        closedNoticeEl.textContent =
-          "Pemungutan suara belum dibuka oleh panitia. Silakan tunggu hingga jadwal pemilihan dimulai.";
-        closedNoticeEl.classList.remove("hidden");
-      } else {
-        badgeEl.className = "badge badge-closed";
-        badgeEl.innerHTML = '<span class="badge-dot"></span><span>Pemilihan Ditutup</span>';
-        closedNoticeEl.textContent =
-          effectiveStatus === "RESULTS_PUBLISHED"
-            ? "Pemilihan telah selesai dan hasil resmi telah disahkan oleh panitia."
-            : "Pemungutan suara telah ditutup. Rekapitulasi suara sedang diproses oleh panitia.";
-        closedNoticeEl.classList.remove("hidden");
-      }
-
-      if (effectiveStatus === "RESULTS_PUBLISHED" && publicResultsSection) {
-        const { data: tally, error: tallyErr } = await supabase.rpc("get_election_tally");
-        if (!tallyErr && tally) {
-          renderPublicResults(publicResultsSection, tally);
-        }
-      }
     } catch (err) {
       badgeEl.className = "badge badge-closed";
       badgeEl.innerHTML = '<span class="badge-dot"></span><span>Gangguan Koneksi</span>';
@@ -351,7 +287,7 @@
   }
 
   // ==========================================================================
-  // PAGE 02 — VOTER VERIFICATION (NAMA LENGKAP + KELAS + TOKEN BERSAMA)
+  // PAGE 02 — VOTER VERIFICATION (SELF-CHECK-IN + 1 DEVICE = 1 VOTE)
   // ==========================================================================
   async function initVerifyPage() {
     const form = document.getElementById("verify-form");
@@ -362,7 +298,6 @@
     const toggleScanBtn = document.getElementById("btn-toggle-scanner");
     const scannerWrapper = document.getElementById("qr-scanner-wrapper");
 
-    // Cek langsung apakah perangkat ini sudah pernah digunakan untuk memilih
     if (Engine && Engine.isDeviceLockedLocally()) {
       Utils.showAlert(
         "verify-alert",
@@ -397,7 +332,7 @@
           "Pemungutan suara saat ini belum dibuka atau sudah ditutup. Anda akan diarahkan ke halaman utama."
         );
         submitBtn.disabled = true;
-        toggleScanBtn.disabled = true;
+        if (toggleScanBtn) toggleScanBtn.disabled = true;
         setTimeout(() => {
           window.location.href = "../index.html";
         }, 2500);
@@ -489,7 +424,7 @@
       const rawToken = Utils.normalizeCode(tokenInput.value);
 
       if (fullName.length < 2) {
-        Utils.showAlert("verify-alert", "error", "Masukkan Nama Lengkap Anda sesuai daftar anggota.");
+        Utils.showAlert("verify-alert", "error", "Masukkan Nama Lengkap Anda.");
         nameInput.focus();
         return;
       }
@@ -564,127 +499,4 @@
         .select("*")
         .eq("position", "CHAIRPERSON")
         .eq("is_active", true)
-        .order("candidate_number", { ascending: true });
-
-      if (error) throw error;
-      candidates = data || [];
-
-      const handleSelect = (chosenId) => {
-        selectedId = chosenId;
-        const chosenObj = candidates.find((c) => c.id === chosenId) || null;
-        Utils.saveVoterDraft({ chairperson: chosenObj });
-        renderCandidateCards(gridEl, candidates, selectedId, handleSelect);
-        updateNextButtonState();
-      };
-
-      renderCandidateCards(gridEl, candidates, selectedId, handleSelect);
-      updateNextButtonState();
-    } catch (err) {
-      Utils.showAlert("ballot-alert", "error", SbService.mapFriendlyError(err));
-    }
-
-    nextBtn.addEventListener("click", () => {
-      if (!selectedId) return;
-      window.location.href = "./review.html";
-    });
-  }
-
-  // ==========================================================================
-  // PAGE 04 — VOTE REVIEW & ATOMIC SUBMISSION
-  // ==========================================================================
-  function initReviewPage() {
-    const draft = Utils.getVoterDraft();
-    if (!draft || !draft.verified || !draft.chairperson) {
-      window.location.replace("./verify.html");
-      return;
-    }
-
-    const chairSummaryEl = document.getElementById("review-chairperson-box");
-    const confirmCheckbox = document.getElementById("checkbox-final-consent");
-    const submitBtn = document.getElementById("btn-submit-ballot");
-
-    const candidate = draft.chairperson;
-    const numFormatted = String(candidate.candidate_number).padStart(2, "0");
-    const initials = getInitials(candidate.full_name);
-    const safeName = Utils.escapeHTML(candidate.full_name);
-
-    const photoHtml = candidate.photo_url
-      ? `<img src="${Utils.escapeHTML(candidate.photo_url)}" alt="Foto ${safeName}" class="candidate-photo" style="width:60px;height:60px;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
-         <div class="candidate-avatar-fallback" style="display:none;width:60px;height:60px;font-size:1.15rem;">${initials}</div>`
-      : `<div class="candidate-avatar-fallback" style="width:60px;height:60px;font-size:1.15rem;">${initials}</div>`;
-
-    chairSummaryEl.innerHTML = `
-      <div class="review-choice-meta">
-        ${photoHtml}
-        <div>
-          <span class="badge badge-neutral" style="margin-bottom:0.25rem;">Nomor Urut ${numFormatted}</span>
-          <div style="font-family:var(--font-heading); font-weight:700; font-size:1.1rem;">${safeName}</div>
-        </div>
-      </div>
-      <a href="./chairperson.html" class="btn btn-outline" style="min-height:40px; padding:0.45rem 0.9rem; font-size:0.8125rem;">
-        Ubah
-      </a>
-    `;
-
-    confirmCheckbox.addEventListener("change", () => {
-      submitBtn.disabled = !confirmCheckbox.checked;
-    });
-
-    submitBtn.addEventListener("click", async () => {
-      if (!confirmCheckbox.checked) return;
-
-      submitBtn.disabled = true;
-      confirmCheckbox.disabled = true;
-      submitBtn.textContent = "Menyimpan Surat Suara...";
-      Utils.hideAlert("review-alert");
-
-      try {
-        await Engine.submitBallotAtomic({
-          voterName: draft.voterName,
-          voterClass: draft.voterClass,
-          rawToken: draft.rawToken,
-          chairpersonId: draft.chairperson.id
-        });
-
-        Utils.clearVoterDraft();
-        sessionStorage.setItem(COMPLETED_FLAG_KEY, "true");
-
-        window.location.replace("./success.html");
-      } catch (err) {
-        if (String(err && err.message) === "SUBMISSION_IN_PROGRESS") return;
-        confirmCheckbox.disabled = false;
-        submitBtn.disabled = !confirmCheckbox.checked;
-        submitBtn.textContent = "KONFIRMASI DAN KIRIM SUARA";
-        Utils.showAlert("review-alert", "error", SbService.mapFriendlyError(err));
-      }
-    });
-  }
-
-  // ==========================================================================
-  // PAGE 05 — SUCCESS PAGE
-  // ==========================================================================
-  function initSuccessPage() {
-    Utils.clearVoterDraft();
-    const isCompleted = sessionStorage.getItem(COMPLETED_FLAG_KEY) === "true";
-    if (!isCompleted) {
-      window.location.replace("../index.html");
-      return;
-    }
-
-    const homeBtn = document.getElementById("btn-back-home");
-    if (homeBtn) {
-      homeBtn.addEventListener("click", () => {
-        sessionStorage.removeItem(COMPLETED_FLAG_KEY);
-      });
-    }
-  }
-
-  document.addEventListener("DOMContentLoaded", () => {
-    const page = document.body.getAttribute("data-page");
-    if (page === "landing") initLandingPage();
-    else if (page === "verify") initVerifyPage();
-    else if (page === "chairperson") initChairpersonPage();
-    else if (page === "review") initReviewPage();
-    else if (page === "success") initSuccessPage();
-  });
-})();
+        .order("candidate_number", { ascending
