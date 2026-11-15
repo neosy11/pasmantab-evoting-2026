@@ -1,60 +1,69 @@
 /* ============================================================================
-   PASMANTAB e-VOTING 2026 — DESIGN TOKENS
-   Palette: Deep Burgundy (#7F1D2D), Primary Red (#A51D32), Dark Charcoal (#171717)
+   PASMANTAB e-VOTING 2026 — DESIGN TOKENS (MINIMALIST & RESPONSIVE)
    ============================================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
 
 :root {
-  /* Brand Colors */
-  --color-burgundy: #7F1D2D;
-  --color-burgundy-dark: #631522;
-  --color-primary-red: #A51D32;
-  --color-primary-red-hover: #8E182A;
+  /* Brand Palette — Ceremonial Red, Burgundy, & Crisp Neutral */
+  --color-primary-red: #C81E1E;
+  --color-primary-red-hover: #A61717;
+  --color-primary-red-tint: #FEF2F2;
+
+  --color-burgundy: #6B1426;
+  --color-burgundy-hover: #520E1C;
+  --color-burgundy-gradient: linear-gradient(135deg, #7F1D2D 0%, #58111E 100%);
   --color-burgundy-tint: #FDF2F4;
-  --color-burgundy-border: #F5C2CA;
+  --color-burgundy-border: #F3D0D7;
 
-  /* Neutral Colors */
-  --color-charcoal: #171717;
+  /* Neutral Surfaces & Ink */
   --color-white: #FFFFFF;
-  --color-soft-gray: #F4F4F5;
-  --color-surface-hover: #ECECEE;
+  --color-canvas: #F8F9FA;
+  --color-soft-gray: #F3F4F6;
   --color-border: #E4E4E7;
-  --color-muted-gray: #71717A;
-  --color-text-secondary: #3F3F46;
+  --color-border-strong: #D4D4D8;
 
-  /* Semantic Status Colors (Institutional Muted) */
+  --color-charcoal: #18181B;
+  --color-text-secondary: #3F3F46;
+  --color-muted-gray: #71717A;
+
+  /* Semantic Status Colors */
   --color-success-bg: #ECFDF5;
-  --color-success-text: #065F46;
   --color-success-border: #A7F3D0;
+  --color-success-text: #065F46;
+  --color-success-dot: #10B981;
 
   --color-warning-bg: #FFFBEB;
-  --color-warning-text: #92400E;
   --color-warning-border: #FDE68A;
+  --color-warning-text: #92400E;
 
   --color-danger-bg: #FEF2F2;
-  --color-danger-text: #991B1B;
   --color-danger-border: #FECACA;
+  --color-danger-text: #991B1B;
+
+  --color-info-bg: #F4F4F5;
+  --color-info-border: #E4E4E7;
+  --color-info-text: #27272A;
 
   /* Typography */
-  --font-heading: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-heading: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  /* Layout & Spacing */
-  --container-max: 1040px;
-  --container-narrow: 560px;
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
+  /* Radii */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
   --radius-full: 9999px;
 
-  /* Elevation */
-  --shadow-xs: 0 1px 2px rgba(23, 23, 23, 0.05);
-  --shadow-sm: 0 2px 8px rgba(23, 23, 23, 0.06);
-  --shadow-md: 0 8px 24px rgba(23, 23, 23, 0.08);
+  /* Layered Minimalist Shadows */
+  --shadow-xs: 0 1px 2px rgba(24, 24, 27, 0.04);
+  --shadow-sm: 0 2px 8px -2px rgba(24, 24, 27, 0.06), 0 1px 3px rgba(24, 24, 27, 0.04);
+  --shadow-md: 0 12px 28px -6px rgba(24, 24, 27, 0.09), 0 4px 10px -2px rgba(24, 24, 27, 0.04);
+  --shadow-focus: 0 0 0 3.5px rgba(200, 30, 30, 0.14);
 
   /* Transitions */
-  --transition-fast: 150ms ease;
-  --transition-normal: 220ms ease;
+  --transition-fast: 160ms cubic-bezier(0.2, 0, 0, 1);
+  --transition-normal: 240ms cubic-bezier(0.2, 0, 0, 1);
 }
