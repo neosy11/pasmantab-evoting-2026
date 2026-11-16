@@ -340,391 +340,96 @@
       background: linear-gradient(90deg, #B45309 0%, #F59E0B 100%);
     }
 
-    /* LAYAR PENGESAHAN KETUA TERPILIH */
+    /* ========================================================================
+       PANGGUNG SINEMATIK PENGESAHAN KETUA TERPILIH (3-PHASE GRAND FINALE)
+       ======================================================================== */
     .ceremony-overlay {
       position: fixed;
       inset: 0;
       z-index: 100;
-      background: radial-gradient(circle at center, #58111E 0%, #19090D 68%, #0D0608 100%);
+      background: radial-gradient(circle at center, #3A0A13 0%, #120609 65%, #070304 100%);
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 1.5rem;
       overflow: hidden;
-      animation: ceremonyBgFade 550ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      animation: fadeOverlayIn 400ms ease forwards;
     }
 
     .ceremony-overlay.hidden {
       display: none !important;
     }
 
-    #confetti-canvas {
+    .ceremony-overlay.screen-shake {
+      animation: stageImpactShake 520ms cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+    }
+
+    #fx-canvas {
       position: absolute;
       inset: 0;
       width: 100%;
       height: 100%;
       pointer-events: none;
-      z-index: 1;
+      z-index: 3;
+    }
+
+    .ceremony-flash {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle, rgba(254, 243, 199, 0.95) 0%, rgba(245, 158, 11, 0.55) 50%, transparent 85%);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 6;
+    }
+
+    .ceremony-flash.trigger {
+      animation: flashExplosion 850ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
     .ceremony-sunburst {
       position: absolute;
-      width: 140vmax;
-      height: 140vmax;
+      width: 160vmax;
+      height: 160vmax;
       background: repeating-conic-gradient(
         from 0deg,
-        rgba(245, 158, 11, 0.08) 0deg 10deg,
-        transparent 10deg 20deg
+        rgba(245, 158, 11, 0.09) 0deg 8deg,
+        transparent 8deg 18deg
       );
-      animation: spinSunburst 36s linear infinite;
+      animation: spinClockwise 42s linear infinite;
       pointer-events: none;
-      z-index: 0;
+      z-index: 1;
     }
 
-    .ceremony-card {
+    /* FASE 1: LAYAR KETEGANGAN / ROULETTE NOMOR URUT */
+    .suspense-stage {
       position: relative;
-      z-index: 2;
-      max-width: 780px;
-      width: 100%;
-      background: linear-gradient(180deg, rgba(28, 16, 20, 0.92) 0%, rgba(18, 12, 14, 0.96) 100%);
-      border: 2px solid rgba(251, 191, 36, 0.65);
-      border-radius: 28px;
-      padding: 2.25rem 2rem;
+      z-index: 4;
       text-align: center;
-      box-shadow:
-        0 0 0 1px rgba(251, 191, 36, 0.25),
-        0 0 70px rgba(217, 119, 6, 0.35),
-        0 30px 70px rgba(0, 0, 0, 0.75);
-      animation: ceremonyCardReveal 750ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    }
-
-    .ceremony-crest {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.65rem;
-      margin-bottom: 0.75rem;
-    }
-
-    .ceremony-crest img {
-      width: 44px;
-      height: 44px;
-      border-radius: 10px;
-      background: #FFFFFF;
-      padding: 2px;
-    }
-
-    .ceremony-decree-label {
-      font-size: 0.78rem;
-      font-weight: 700;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: #FCD34D;
-    }
-
-    .ceremony-main-heading {
-      font-family: var(--font-heading);
-      font-size: clamp(1.35rem, 3vw, 2rem);
-      font-weight: 800;
-      letter-spacing: 0.03em;
-      text-transform: uppercase;
-      color: #FFFFFF;
-      margin-bottom: 1.25rem;
-    }
-
-    .ceremony-number-hero {
-      display: inline-flex;
+      display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(135deg, #F59E0B 0%, #D97706 50%, #B45309 100%);
-      color: #FFFFFF;
-      padding: 0.55rem 2rem;
-      border-radius: 18px;
-      border: 2px solid #FDE68A;
-      box-shadow: 0 10px 30px rgba(217, 119, 6, 0.55);
-      margin-bottom: 1.35rem;
-      position: relative;
-      overflow: hidden;
-      animation: heroNumberBounce 850ms cubic-bezier(0.22, 1, 0.36, 1) 200ms both;
     }
 
-    .ceremony-number-hero::after {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 60%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
-      transform: skewX(-20deg);
-      animation: goldSweep 2.6s ease-in-out 900ms infinite;
+    .suspense-stage.hidden {
+      display: none !important;
     }
 
-    .ceremony-number-caption {
+    .suspense-kicker {
       font-family: var(--font-mono);
-      font-size: 0.72rem;
+      font-size: clamp(0.85rem, 1.8vw, 1.1rem);
       font-weight: 700;
-      letter-spacing: 0.16em;
+      letter-spacing: 0.24em;
       text-transform: uppercase;
-      opacity: 0.95;
+      color: #FCD34D;
+      margin-bottom: 1.5rem;
+      animation: pulseGlowText 900ms ease-in-out infinite alternate;
     }
 
-    .ceremony-number-digits {
-      font-family: var(--font-heading);
-      font-size: clamp(2.8rem, 6vw, 4.25rem);
-      font-weight: 800;
-      line-height: 1;
-      letter-spacing: 0.04em;
-      text-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
-    }
-
-    .ceremony-photo-wrap {
-      margin: 0 auto 1.15rem;
-      width: 156px;
-      height: 156px;
+    .roulette-ring {
+      width: 240px;
+      height: 240px;
       border-radius: 50%;
-      padding: 5px;
-      background: linear-gradient(135deg, #FDE68A, #D97706, #F59E0B);
-      box-shadow: 0 0 35px rgba(245, 158, 11, 0.5);
-      animation: ceremonyFadeUp 700ms ease 350ms both;
-    }
-
-    .ceremony-photo-img {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      object-fit: cover;
-      background: #27272A;
-    }
-
-    .ceremony-photo-initials {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #7F1D2D 0%, #4C0D18 100%);
-      color: #FFFFFF;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: var(--font-heading);
-      font-size: 3rem;
-      font-weight: 800;
-    }
-
-    .ceremony-winner-name {
-      font-family: var(--font-heading);
-      font-size: clamp(1.65rem, 3.8vw, 2.65rem);
-      font-weight: 800;
-      color: #FFFFFF;
-      line-height: 1.2;
-      margin-bottom: 0.75rem;
-      animation: ceremonyFadeUp 700ms ease 450ms both;
-    }
-
-    .ceremony-stats-pill {
-      display: inline-flex;
-      align-items: center;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 0.5rem;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(251, 191, 36, 0.35);
-      border-radius: 999px;
-      padding: 0.5rem 1.25rem;
-      font-family: var(--font-mono);
-      font-size: 0.9rem;
-      font-weight: 700;
-      color: #FDE68A;
-      margin-bottom: 1.25rem;
-      animation: ceremonyFadeUp 700ms ease 550ms both;
-    }
-
-    .ceremony-motto {
-      font-size: 0.85rem;
-      color: #D4D4D8;
-      max-width: 560px;
-      margin: 0 auto;
-      line-height: 1.5;
-      animation: ceremonyFadeUp 700ms ease 650ms both;
-    }
-
-    .ceremony-toolbar {
-      position: fixed;
-      bottom: 1.25rem;
-      right: 1.25rem;
-      z-index: 105;
-      display: flex;
-      gap: 0.5rem;
-      opacity: 0.78;
-      transition: opacity 180ms ease;
-    }
-
-    .ceremony-toolbar:hover {
-      opacity: 1;
-    }
-
-    @keyframes ceremonyBgFade {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-
-    @keyframes ceremonyCardReveal {
-      0% { opacity: 0; transform: scale(0.86) translateY(24px); }
-      100% { opacity: 1; transform: scale(1) translateY(0); }
-    }
-
-    @keyframes heroNumberBounce {
-      0% { opacity: 0; transform: scale(0.35); }
-      65% { opacity: 1; transform: scale(1.08); }
-      100% { opacity: 1; transform: scale(1); }
-    }
-
-    @keyframes ceremonyFadeUp {
-      from { opacity: 0; transform: translateY(14px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes goldSweep {
-      0% { left: -100%; }
-      45%, 100% { left: 160%; }
-    }
-
-    @keyframes spinSunburst {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-  </style>
-</head>
-<body>
-  <header class="projector-topbar">
-    <div class="projector-brand">
-      <img src="../assets/logo-pasmantab.png" onerror="this.src='../assets/logo-pasmantab.svg'" alt="Logo PASMANTAB" />
-      <div>
-        <div id="proj-main-title" style="font-family:var(--font-heading); font-weight:800; font-size:1rem; letter-spacing:0.01em;">
-          LIVE COUNT — PEMILIHAN KETUA PASMANTAB
-        </div>
-        <div id="proj-subtitle" style="font-size:0.75rem; color:#A1A1AA;">
-          PASKIBRA MAN 4 BANJAR • MODE PEMBACAAN SURAT SUARA VIRTUAL
-        </div>
-      </div>
-    </div>
-
-    <div class="projector-controls">
-      <select id="select-reveal-speed" class="speed-select" aria-label="Kecepatan Pembacaan">
-        <option value="1200">Kecepatan: Lambat (1,2 dtk)</option>
-        <option value="600" selected>Kecepatan: Normal (0,6 dtk)</option>
-        <option value="250">Kecepatan: Cepat (0,25 dtk)</option>
-      </select>
-
-      <button type="button" id="btn-toggle-sound" class="btn-glass" title="Suara Efek">
-        Suara: Aktif
-      </button>
-
-      <button type="button" id="btn-fullscreen" class="btn-glass">
-        Layar Penuh
-      </button>
-
-      <a href="./dashboard.html" class="btn-glass">
-        Kembali ke Dashboard
-      </a>
-    </div>
-  </header>
-
-  <main class="projector-container">
-    <div id="proj-alert" class="alert hidden" role="alert"></div>
-
-    <section class="ballot-stage">
-      <div>
-        <div id="virtual-ballot-box" class="virtual-ballot-card">
-          <div id="ballot-meta" class="ballot-meta-tag">KOTAK SUARA TERSEGEL &bull; SIAP DIBACAKAN</div>
-          <div id="ballot-headline" class="ballot-choice-headline">
-            Tekan tombol "Mulai Pembacaan Suara" untuk memulai
-          </div>
-        </div>
-
-        <div style="display:flex; flex-wrap:wrap; gap:0.65rem; margin-top:1rem;">
-          <button type="button" id="btn-start-reveal" class="btn btn-primary" disabled>
-            MULAI PEMBACAAN SUARA
-          </button>
-          <button type="button" id="btn-pause-reveal" class="btn-glass hidden">
-            Jeda (Pause)
-          </button>
-          <button type="button" id="btn-reset-reveal" class="btn-glass hidden">
-            Ulangi dari 0
-          </button>
-          <button type="button" id="btn-skip-reveal" class="btn-glass hidden">
-            Tampilkan Hasil Akhir
-          </button>
-          <button type="button" id="btn-show-ceremony" class="btn-gold-glass hidden">
-            &#9733; Tampilkan Layar Pengesahan
-          </button>
-        </div>
-      </div>
-
-      <div class="stage-counter-box">
-        <div class="stage-counter-num">
-          <span id="revealed-count">0</span> / <span id="total-ballots-count">0</span>
-        </div>
-        <div class="stage-counter-label">Surat Suara Terbaca</div>
-        <div id="participation-pill" style="margin-top:0.5rem; font-size:0.78rem; color:#A7F3D0; font-weight:600;">
-          Memuat data kotak suara...
-        </div>
-      </div>
-    </section>
-
-    <section id="projector-candidates-grid" class="projector-grid"></section>
-  </main>
-
-  <div id="winner-ceremony-overlay" class="ceremony-overlay hidden" role="dialog" aria-modal="true">
-    <div class="ceremony-sunburst"></div>
-    <canvas id="confetti-canvas"></canvas>
-
-    <div class="ceremony-card">
-      <div class="ceremony-crest">
-        <img src="../assets/logo-pasmantab.png" onerror="this.src='../assets/logo-pasmantab.svg'" alt="Logo PASMANTAB" />
-        <div style="text-align:left;">
-          <div id="ceremony-org-header" class="ceremony-decree-label">PASKIBRA MAN 4 BANJAR</div>
-          <div style="font-size:0.72rem; color:#E4E4E7; letter-spacing:0.06em;">PENGESAHAN HASIL MUSYAWARAH BESAR</div>
-        </div>
-      </div>
-
-      <h2 id="ceremony-title-heading" class="ceremony-main-heading">
-        KETUA TERPILIH PERIODE 2027
-      </h2>
-
-      <div class="ceremony-number-hero">
-        <span class="ceremony-number-caption">NOMOR URUT TERPILIH</span>
-        <span id="ceremony-number-digits" class="ceremony-number-digits">01</span>
-      </div>
-
-      <div id="ceremony-photo-slot" class="ceremony-photo-wrap"></div>
-
-      <div id="ceremony-winner-name" class="ceremony-winner-name">
-        Nama Ketua Terpilih
-      </div>
-
-      <div id="ceremony-vote-stats" class="ceremony-stats-pill">
-        0 Suara Sah (0.0%)
-      </div>
-
-      <p class="ceremony-motto">
-        Selamat mengemban amanah kepemimpinan. Semoga membawa Paskibra MAN 4 Banjar semakin disiplin, solid, dan berprestasi.
-      </p>
-    </div>
-
-    <div class="ceremony-toolbar">
-      <button type="button" id="btn-replay-confetti" class="btn-glass">
-        Ulangi Efek
-      </button>
-      <button type="button" id="btn-close-ceremony" class="btn-glass">
-        Lihat Rincian Grafik
-      </button>
-    </div>
-  </div>
-
-  <script src="../js/config.js?v=6"></script>
-  <script src="../js/supabase-client.js?v=6"></script>
-  <script src="../js/utils.js?v=6"></script>
-  <script src="../js/live-count.js?v=3"></script>
-</body>
-</html>
+      border: 4px dashed rgba(251, 191, 36, 0.65);
+      box-shadow:
+        0 0 60px rgba(217, 119
