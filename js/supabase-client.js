@@ -1,110 +1,177 @@
 /**
- * PASMANTAB e-VOTING 2026 — Supabase Client Wrapper
+ * PASMANTAB e-VOTING 2026 — Supabase Client & RPC Bridge
  */
 (function () {
-  const cfg = window.PASMANTAB_CONFIG || {};
-
-  function isConfigured() {
-    return (
-      cfg.SUPABASE_URL &&
-      cfg.SUPABASE_ANON_KEY &&
-      !cfg.SUPABASE_URL.includes("YOUR_PROJECT_ID") &&
-      !cfg.SUPABASE_ANON_KEY.includes("YOUR_SUPABASE_ANON_KEY")
-    );
-  }
-
   let supabaseInstance = null;
 
-  function getSupabase() {
-    if (!isConfigured()) {
-      throw new Error(
-        "CONFIG_MISSING: Lengkapi SUPABASE_URL dan SUPABASE_ANON_KEY pada file js/config.js."
-      );
+  function resolveConfig() {
+    const cfg =
+      window.PASMANTAB_CONFIG ||
+      window.APP_CONFIG ||
+      window.SUPABASE_CONFIG ||
+      {};
+
+    const url =
+      cfg.SUPABASE_URL ||
+      cfg.supabaseUrl ||
+      window.SUPABASE_URL ||
+      "";
+
+    const anonKey =
+      cfg.SUPABASE_ANON_KEY ||
+      cfg.supabaseAnonKey ||
+      window.SUPABASE_ANON_KEY ||
+      "";
+
+    return { url, anonKey };
+  }
+
+  function getClient() {
+    if (supabaseInstance) return supabaseInstance;
+
+    if (!window.supabase || typeof window.supabase.createClient !== "function") {
+      throw new Error("Library Supabase JS belum dimuat.");
     }
-    if (!window.supabase || !window.supabase.createClient) {
-      throw new Error("Library Supabase gagal dimuat. Periksa koneksi internet Anda.");
+
+    const { url, anonKey } = resolveConfig();
+    if (!url || !anonKey) {
+      throw new Error("Konfigurasi SUPABASE_URL atau SUPABASE_ANON_KEY belum diatur di js/config.js.");
     }
-    if (!supabaseInstance) {
-      supabaseInstance = window.supabase.createClient(
-        cfg.SUPABASE_URL,
-        cfg.SUPABASE_ANON_KEY,
-        {
-          auth: {
-            persistSession: true,
-            autoRefreshToken: true
-          }
-        }
-      );
-    }
+
+    supabaseInstance = window.supabase.createClient(url, anonKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
+    });
+
     return supabaseInstance;
   }
 
   function mapFriendlyError(err) {
     console.error("[PASMANTAB SYSTEM DETAIL]:", err);
 
-    const raw = (err && (err.message || err.details || String(err))) || "";
-    const msg = raw.toUpperCase();
+    const raw = String(
+      (err && (err.message || err.error_description || err.details)) || err || ""
+    ).toUpperCase();
 
-    if (msg.includes("DEVICE_ALREADY_VOTED")) {
-      return "Perangkat ini sudah digunakan untuk memberikan suara (1 Perangkat = 1 Suara). Silakan gunakan perangkat pribadi Anda.";
+    if (raw.includes("DEVICE_ALREADY_VOTED")) {
+      return "Perangkat (HP/Laptop) ini sudah digunakan untuk memberikan suara. Satu perangkat hanya berlaku untuk satu pemilih.";
     }
-    if (msg.includes("INVALID_IDENTITY_INPUT")) {
-      return "Masukkan Nama Lengkap dan Kelas Anda dengan benar.";
+    if (raw.includes("ALREADY_VOTED") || raw.includes("VOTER_ALREADY_VOTED")) {
+      return "Identitas Anda (nama & kelas) tercatat sudah menggunakan hak suara sebelumnya.";
     }
-    if (msg.includes("OFFLINE_DEVICE")) {
-      return "Perangkat Anda sedang offline. Sambungkan internet lalu coba kembali.";
+    if (raw.includes("TOKEN_EXPIRED")) {
+      return "Masa berlaku kode token telah habis. Silakan minta kode token aktif kepada panitia.";
     }
-    if (msg.includes("RATE_LIMIT_EXCEEDED")) {
-      return "Terlalu banyak percobaan gagal. Tunggu 5 menit sebelum mencoba kembali.";
+    if (raw.includes("TOKEN_REVOKED") || raw.includes("TOKEN_INACTIVE")) {
+      return "Kode token sudah dinonaktifkan oleh panitia.";
     }
-    if (msg.includes("BALLOTS_ARE_IMMUTABLE") || msg.includes("AUDIT_LOGS_ARE_IMMUTABLE")) {
-      return "Data kotak suara bersifat permanen dan tidak dapat diubah.";
+    if (raw.includes("INVALID_TOKEN") || raw.includes("TOKEN_NOT_FOUND")) {
+      return "Kode token tidak valid atau tidak ditemukan. Periksa kembali huruf dan angkanya.";
     }
-    if (msg.includes("ELECTION_NOT_OPEN")) {
-      return "Pemilihan belum dibuka atau sudah ditutup oleh panitia.";
+    if (raw.includes("ELECTION_NOT_OPEN") || raw.includes("ELECTION_CLOSED")) {
+      return "Sesi pemungutan suara saat ini sedang ditutup oleh panitia.";
     }
-    if (msg.includes("INVALID_OR_EXPIRED_TOKEN")) {
-      return "Kode Token tidak valid, sudah dicabut, atau telah kedaluwarsa.";
+    if (raw.includes("INVALID_CANDIDATE")) {
+      return "Kandidat yang dipilih tidak valid atau sudah tidak aktif.";
     }
-    if (msg.includes("MEMBER_INELIGIBLE")) {
-      return "Status keanggotaan Anda tidak memenuhi syarat untuk memilih.";
+    if (raw.includes("INVALID LOGIN CREDENTIALS")) {
+      return "Email atau kata sandi panitia tidak sesuai.";
     }
-    if (msg.includes("ALREADY_VOTED")) {
-      return "Nama dan Kelas ini sudah tercatat menggunakan hak suaranya sebelumnya (1 Anggota = 1 Suara).";
+    if (raw.includes("FAILED TO FETCH") || raw.includes("NETWORKERROR")) {
+      return "Koneksi internet terputus atau tidak stabil. Periksa jaringan Anda lalu coba lagi.";
     }
-    if (msg.includes("INVALID_CANDIDATE")) {
-      return "Kandidat yang dipilih tidak valid atau sudah dinonaktifkan.";
-    }
-    if (msg.includes("UNAUTHORIZED_ADMIN") || msg.includes("PGRST116")) {
-      return "Akses ditolak. Akun Anda belum terdaftar aktif pada tabel admin_users.";
-    }
-    if (msg.includes("FAILED TO FETCH") || msg.includes("NETWORK") || msg.includes("TIMEOUT")) {
-      return "Koneksi internet terputus atau lambat. Periksa jaringan Anda dan coba kembali.";
-    }
+
     return "Terjadi gangguan pada sistem. Silakan coba beberapa saat lagi atau hubungi panitia.";
   }
 
-  window.SupabaseService = {
-    isConfigured,
-    getClient: getSupabase,
-    mapFriendlyError
-  };
-  // Jembatan RPC pengiriman surat suara atomik (Tahap 3)
-if (window.SupabaseService) {
-  window.SupabaseService.rpc = Object.assign(window.SupabaseService.rpc || {}, {
-    async submitBallotAtomic(payload = {}) {
-      const client = window.SupabaseService.getClient();
-      const { data, error } = await client.rpc("cast_ballot_atomic", {
-        p_full_name: payload.p_full_name || payload.fullName || payload.full_name,
-        p_class_name: payload.p_class_name || payload.className || payload.class_name,
-        p_raw_token: payload.p_raw_token || payload.rawToken || payload.raw_token,
+  function normalizeVoterArgs(arg1, className, rawToken, deviceId) {
+    if (arg1 && typeof arg1 === "object") {
+      return {
+        p_full_name: arg1.p_full_name || arg1.fullName || arg1.full_name || "",
+        p_class_name: arg1.p_class_name || arg1.className || arg1.class_name || "",
+        p_raw_token: arg1.p_raw_token || arg1.rawToken || arg1.raw_token || "",
+        p_device_id: arg1.p_device_id || arg1.deviceId || arg1.device_id || null
+      };
+    }
+    return {
+      p_full_name: arg1 || "",
+      p_class_name: className || "",
+      p_raw_token: rawToken || "",
+      p_device_id: deviceId || null
+    };
+  }
+
+  function normalizeBallotArgs(arg1, className, rawToken, chairpersonId, deviceId) {
+    if (arg1 && typeof arg1 === "object") {
+      return {
+        p_full_name: arg1.p_full_name || arg1.fullName || arg1.full_name || "",
+        p_class_name: arg1.p_class_name || arg1.className || arg1.class_name || "",
+        p_raw_token: arg1.p_raw_token || arg1.rawToken || arg1.raw_token || "",
         p_chairperson_id:
-          payload.p_chairperson_id || payload.chairpersonId || payload.chairperson_id,
-        p_device_id: payload.p_device_id || payload.deviceId || payload.device_id || null
-      });
+          arg1.p_chairperson_id || arg1.chairpersonId || arg1.chairperson_id || null,
+        p_device_id: arg1.p_device_id || arg1.deviceId || arg1.device_id || null
+      };
+    }
+    return {
+      p_full_name: arg1 || "",
+      p_class_name: className || "",
+      p_raw_token: rawToken || "",
+      p_chairperson_id: chairpersonId || null,
+      p_device_id: deviceId || null
+    };
+  }
+
+  const rpcBridge = {
+    async verifyVoterAccess(arg1, className, rawToken, deviceId) {
+      const client = getClient();
+      const params = normalizeVoterArgs(arg1, className, rawToken, deviceId);
+      const { data, error } = await client.rpc("verify_voter_access", params);
       if (error) throw error;
       return data || { ok: true };
+    },
+
+    async submitBallotAtomic(arg1, className, rawToken, chairpersonId, deviceId) {
+      const client = getClient();
+      const params = normalizeBallotArgs(
+        arg1,
+        className,
+        rawToken,
+        chairpersonId,
+        deviceId
+      );
+      const { data, error } = await client.rpc("cast_ballot_atomic", params);
+      if (error) throw error;
+      return data || { ok: true };
+    },
+
+    async castBallotAtomic(arg1, className, rawToken, chairpersonId, deviceId) {
+      return rpcBridge.submitBallotAtomic(
+        arg1,
+        className,
+        rawToken,
+        chairpersonId,
+        deviceId
+      );
+    },
+
+    async getElectionTally() {
+      const client = getClient();
+      const { data, error } = await client.rpc("get_election_tally");
+      if (error) throw error;
+      return data;
     }
-  });
-}
+  };
+
+  window.SupabaseService = {
+    getClient,
+    mapFriendlyError,
+    rpc: rpcBridge,
+    verifyVoterAccess: rpcBridge.verifyVoterAccess,
+    submitBallotAtomic: rpcBridge.submitBallotAtomic,
+    castBallotAtomic: rpcBridge.castBallotAtomic,
+    getElectionTally: rpcBridge.getElectionTally
+  };
 })();
