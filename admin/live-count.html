@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Live Count Proyektor — PASMANTAB e-VOTING 2026</title>
+  <link rel="icon" type="image/png" href="../assets/logo-pasmantab.png" />
+  <link rel="stylesheet" href="../css/tokens.css?v=4" />
+  <link rel="stylesheet" href="../css/main.css?v=4" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body {
+      background: radial-gradient(circle at top, #271016 0%, #141417 65%);
+      color: #FFFFFF;
+      min-height: 100vh;
+    }
+
+    .projector-topbar {
+      background: rgba(20, 20, 23, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 0.85rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      position: sticky;
+      top: 0;
+      z-index: 30;
+    }
+
+    .projector-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+
+    .projector-brand img {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      background: #FFFFFF;
+      padding: 2px;
+    }
+
+    .projector-controls {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .speed-select {
+      min-height: 40px;
+      padding: 0.35rem 0.75rem;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #FFFFFF;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      font-family: var(--font-sans);
+      font-size: 0.82rem;
+      cursor: pointer;
+    }
+
+    .speed-select option {
+      background: #18181B;
+      color: #FFFFFF;
+    }
+
+    .btn-glass {
+      min-height: 40px;
+      padding: 0.4rem 0.9rem;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #FFFFFF;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 160ms ease;
+    }
+
+    .btn-glass:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.16);
+    }
+
+    .projector-container {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 1.5rem 1.25rem 3rem;
+    }
+
+    /* Panggung Pembacaan Surat Suara Virtual */
+    .ballot-stage {
+      background: linear-gradient(145deg, rgba(107, 20, 38, 0.42) 0%, rgba(24, 24, 27, 0.92) 100%);
+      border: 1px solid rgba(243, 208, 215, 0.22);
+      border-radius: 20px;
+      padding: 1.5rem;
+      margin-bottom: 1.75rem;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 1.25rem;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.4);
+    }
+
+    @media (max-width: 768px) {
+      .ballot-stage {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+    }
+
+    .virtual-ballot-card {
+      background: #FFFFFF;
+      color: #18181B;
+      border-radius: 14px;
+      padding: 1.1rem 1.4rem;
+      border-left: 6px solid #C81E1E;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+      min-height: 92px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      transition: transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    .virtual-ballot-card.pop {
+      transform: scale(1.02);
+    }
+
+    .ballot-meta-tag {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #6B1426;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 0.25rem;
+    }
+
+    .ballot-choice-headline {
+      font-family: var(--font-heading);
+      font-size: clamp(1.15rem, 2.5vw, 1.55rem);
+      font-weight: 800;
+      color: #18181B;
+    }
+
+    .stage-counter-box {
+      text-align: right;
+      min-width: 190px;
+    }
+
+    @media (max-width: 768px) {
+      .stage-counter-box {
+        text-align: center;
+      }
+    }
+
+    .stage-counter-num {
+      font-family: var(--font-heading);
+      font-size: 2.1rem;
+      font-weight: 800;
+      line-height: 1.1;
+      color: #FFFFFF;
+    }
+
+    .stage-counter-label {
+      font-size: 0.78rem;
+      color: #D4D4D8;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-top: 0.25rem;
+    }
+
+    /* Grid Kartu Kandidat Proyektor */
+    .projector-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 310px), 1fr));
+      gap: 1.35rem;
+    }
+
+    .proj-card {
+      background: #FFFFFF;
+      color: #18181B;
+      border-radius: 18px;
+      padding: 1.5rem;
+      border: 2px solid transparent;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
+      transition: transform 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .proj-card.flash-vote {
+      transform: translateY(-4px) scale(1.015);
+      border-color: #C81E1E;
+      box-shadow: 0 0 0 5px rgba(200, 30, 30, 0.28), 0 18px 36px rgba(0, 0, 0, 0.4);
+    }
+
+    .proj-card.winner-card {
+      border-color: #D97706;
+      background: linear-gradient(180deg, #FFFBEB 0%, #FFFFFF 45%);
+      box-shadow: 0 0 0 5px rgba(245, 158, 11, 0.35), 0 20px 45px rgba(0, 0, 0, 0.45);
+    }
+
+    .winner-ribbon {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: linear-gradient(135deg, #D97706 0%, #B45309 100%);
+      color: #FFFFFF;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 0.3rem 0.75rem;
+      border-radius: 999px;
+      margin-bottom: 0.75rem;
+    }
+
+    .proj-cand-top {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .proj-photo {
+      width: 78px;
+      height: 78px;
+      border-radius: 14px;
+      object-fit: cover;
+      border: 2px solid #E4E4E7;
+      flex-shrink: 0;
+    }
+
+    .proj-avatar {
+      width: 78px;
+      height: 78px;
+      border-radius: 14px;
+      background: var(--color-burgundy-gradient);
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-heading);
+      font-size: 1.65rem;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .proj-num-tag {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #6B1426;
+      background: #FDF2F4;
+      border: 1px solid #F3D0D7;
+      padding: 0.15rem 0.55rem;
+      border-radius: 6px;
+      display: inline-block;
+      margin-bottom: 0.3rem;
+    }
+
+    .proj-cand-name {
+      font-family: var(--font-heading);
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #18181B;
+      line-height: 1.25;
+    }
+
+    .proj-score-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 0.6rem;
+    }
+
+    .proj-vote-count {
+      font-family: var(--font-heading);
+      font-size: 2.6rem;
+      font-weight: 800;
+      color: #18181B;
+      line-height: 1;
+    }
+
+    .proj-vote-unit {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #71717A;
+      margin-left: 0.35rem;
+    }
+
+    .proj-vote-pct {
+      font-family: var(--font-mono);
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #6B1426;
+    }
+
+    .proj-bar-track {
+      width: 100%;
+      height: 16px;
+      background: #F3F4F6;
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid #E4E4E7;
+    }
+
+    .proj-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #6B1426 0%, #C81E1E 100%);
+      border-radius: 999px;
+      transition: width 240ms cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    .proj-card.winner-card .proj-bar-fill {
+      background: linear-gradient(90deg, #B45309 0%, #F59E0B 100%);
+    }
+  </style>
+</head>
+<body>
+  <header class="projector-topbar">
+    <div class="projector-brand">
+      <img src="../assets/logo-pasmantab.png" onerror="this.src='../assets/logo-pasmantab.svg'" alt="Logo PASMANTAB" />
+      <div>
+        <div style="font-family:var(--font-heading); font-weight:800; font-size:1rem; letter-spacing:0.01em;">
+          LIVE COUNT — PEMILIHAN KETUA PASMANTAB 2026
+        </div>
+        <div id="proj-subtitle" style="font-size:0.75rem; color:#A1A1AA;">
+          PASKIBRA MAN 4 BANJAR • MODE PEMBACAAN SURAT SUARA VIRTUAL
+        </div>
+      </div>
+    </div>
+
+    <div class="projector-controls">
+      <select id="select-reveal-speed" class="speed-select" aria-label="Kecepatan Pembacaan">
+        <option value="1200">Kecepatan: Lambat (1,2 dtk)</option>
+        <option value="600" selected>Kecepatan: Normal (0,6 dtk)</option>
+        <option value="250">Kecepatan: Cepat (0,25 dtk)</option>
+      </select>
+
+      <button type="button" id="btn-toggle-sound" class="btn-glass" title="Suara Efek">
+        Suara: Aktif
+      </button>
+
+      <button type="button" id="btn-fullscreen" class="btn-glass">
+        Layar Penuh
+      </button>
+
+      <a href="./dashboard.html" class="btn-glass">
+        Kembali ke Dashboard
+      </a>
+    </div>
+  </header>
+
+  <main class="projector-container">
+    <div id="proj-alert" class="alert hidden" role="alert"></div>
+
+    <!-- Panggung Surat Suara Virtual -->
+    <section class="ballot-stage">
+      <div>
+        <div id="virtual-ballot-box" class="virtual-ballot-card">
+          <div id="ballot-meta" class="ballot-meta-tag">KOTAK SUARA TERSEGEL &bull; SIAP DIBACAKAN</div>
+          <div id="ballot-headline" class="ballot-choice-headline">
+            Tekan tombol "Mulai Pembacaan Suara" untuk memulai
+          </div>
+        </div>
+
+        <div style="display:flex; flex-wrap:wrap; gap:0.65rem; margin-top:1rem;">
+          <button type="button" id="btn-start-reveal" class="btn btn-primary" disabled>
+            MULAI PEMBACAAN SUARA
+          </button>
+          <button type="button" id="btn-pause-reveal" class="btn-glass hidden">
+            Jeda (Pause)
+          </button>
+          <button type="button" id="btn-reset-reveal" class="btn-glass hidden">
+            Ulangi dari 0
+          </button>
+          <button type="button" id="btn-skip-reveal" class="btn-glass hidden">
+            Tampilkan Hasil Akhir
+          </button>
+        </div>
+      </div>
+
+      <div class="stage-counter-box">
+        <div class="stage-counter-num">
+          <span id="revealed-count">0</span> / <span id="total-ballots-count">0</span>
+        </div>
+        <div class="stage-counter-label">Surat Suara Terbaca</div>
+        <div id="participation-pill" style="margin-top:0.5rem; font-size:0.78rem; color:#A7F3D0; font-weight:600;">
+          Memuat data kotak suara...
+        </div>
+      </div>
+    </section>
+
+    <!-- Daftar Kartu Kandidat -->
+    <section id="projector-candidates-grid" class="projector-grid"></section>
+  </main>
+
+  <script src="../js/config.js?v=4"></script>
+  <script src="../js/supabase-client.js?v=4"></script>
+  <script src="../js/utils.js?v=4"></script>
+  <script src="../js/live-count.js?v=1"></script>
+</body>
+</html>
