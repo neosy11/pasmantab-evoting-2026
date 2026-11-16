@@ -5,14 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Live Count Proyektor — PASMANTAB e-VOTING 2026</title>
   <link rel="icon" type="image/png" href="../assets/logo-pasmantab.png" />
-  <link rel="stylesheet" href="../css/tokens.css?v=4" />
-  <link rel="stylesheet" href="../css/main.css?v=4" />
+  <link rel="stylesheet" href="../css/tokens.css?v=6" />
+  <link rel="stylesheet" href="../css/main.css?v=6" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     body {
       background: radial-gradient(circle at top, #271016 0%, #141417 65%);
       color: #FFFFFF;
       min-height: 100vh;
+      overflow-x: hidden;
     }
 
     .projector-topbar {
@@ -83,6 +84,25 @@
 
     .btn-glass:hover:not(:disabled) {
       background: rgba(255, 255, 255, 0.16);
+    }
+
+    .btn-gold-glass {
+      min-height: 40px;
+      padding: 0.4rem 0.95rem;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #D97706 0%, #B45309 100%);
+      color: #FFFFFF;
+      border: 1px solid #FBBF24;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(217, 119, 6, 0.35);
+      transition: transform 160ms ease, filter 160ms ease;
+    }
+
+    .btn-gold-glass:hover {
+      filter: brightness(1.08);
+      transform: translateY(-1px);
     }
 
     .projector-container {
@@ -321,90 +341,41 @@
     .proj-card.winner-card .proj-bar-fill {
       background: linear-gradient(90deg, #B45309 0%, #F59E0B 100%);
     }
-  </style>
-</head>
-<body>
-  <header class="projector-topbar">
-    <div class="projector-brand">
-      <img src="../assets/logo-pasmantab.png" onerror="this.src='../assets/logo-pasmantab.svg'" alt="Logo PASMANTAB" />
-      <div>
-        <div style="font-family:var(--font-heading); font-weight:800; font-size:1rem; letter-spacing:0.01em;">
-          LIVE COUNT — PEMILIHAN KETUA PASMANTAB 2026
-        </div>
-        <div id="proj-subtitle" style="font-size:0.75rem; color:#A1A1AA;">
-          PASKIBRA MAN 4 BANJAR • MODE PEMBACAAN SURAT SUARA VIRTUAL
-        </div>
-      </div>
-    </div>
 
-    <div class="projector-controls">
-      <select id="select-reveal-speed" class="speed-select" aria-label="Kecepatan Pembacaan">
-        <option value="1200">Kecepatan: Lambat (1,2 dtk)</option>
-        <option value="600" selected>Kecepatan: Normal (0,6 dtk)</option>
-        <option value="250">Kecepatan: Cepat (0,25 dtk)</option>
-      </select>
+    /* ========================================================================
+       LAYAR PENGESAHAN KETUA TERPILIH (FULLSCREEN CEREMONY OVERLAY)
+       ======================================================================== */
+    .ceremony-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: radial-gradient(circle at center, #58111E 0%, #19090D 68%, #0D0608 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      overflow: hidden;
+      animation: ceremonyBgFade 550ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
 
-      <button type="button" id="btn-toggle-sound" class="btn-glass" title="Suara Efek">
-        Suara: Aktif
-      </button>
+    .ceremony-overlay.hidden {
+      display: none !important;
+    }
 
-      <button type="button" id="btn-fullscreen" class="btn-glass">
-        Layar Penuh
-      </button>
+    #confetti-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
 
-      <a href="./dashboard.html" class="btn-glass">
-        Kembali ke Dashboard
-      </a>
-    </div>
-  </header>
-
-  <main class="projector-container">
-    <div id="proj-alert" class="alert hidden" role="alert"></div>
-
-    <!-- Panggung Surat Suara Virtual -->
-    <section class="ballot-stage">
-      <div>
-        <div id="virtual-ballot-box" class="virtual-ballot-card">
-          <div id="ballot-meta" class="ballot-meta-tag">KOTAK SUARA TERSEGEL &bull; SIAP DIBACAKAN</div>
-          <div id="ballot-headline" class="ballot-choice-headline">
-            Tekan tombol "Mulai Pembacaan Suara" untuk memulai
-          </div>
-        </div>
-
-        <div style="display:flex; flex-wrap:wrap; gap:0.65rem; margin-top:1rem;">
-          <button type="button" id="btn-start-reveal" class="btn btn-primary" disabled>
-            MULAI PEMBACAAN SUARA
-          </button>
-          <button type="button" id="btn-pause-reveal" class="btn-glass hidden">
-            Jeda (Pause)
-          </button>
-          <button type="button" id="btn-reset-reveal" class="btn-glass hidden">
-            Ulangi dari 0
-          </button>
-          <button type="button" id="btn-skip-reveal" class="btn-glass hidden">
-            Tampilkan Hasil Akhir
-          </button>
-        </div>
-      </div>
-
-      <div class="stage-counter-box">
-        <div class="stage-counter-num">
-          <span id="revealed-count">0</span> / <span id="total-ballots-count">0</span>
-        </div>
-        <div class="stage-counter-label">Surat Suara Terbaca</div>
-        <div id="participation-pill" style="margin-top:0.5rem; font-size:0.78rem; color:#A7F3D0; font-weight:600;">
-          Memuat data kotak suara...
-        </div>
-      </div>
-    </section>
-
-    <!-- Daftar Kartu Kandidat -->
-    <section id="projector-candidates-grid" class="projector-grid"></section>
-  </main>
-
-  <script src="../js/config.js?v=4"></script>
-  <script src="../js/supabase-client.js?v=4"></script>
-  <script src="../js/utils.js?v=4"></script>
-  <script src="../js/live-count.js?v=1"></script>
-</body>
-</html>
+    /* Sorotan sinar berputar halus di belakang kartu pemenang */
+    .ceremony-sunburst {
+      position: absolute;
+      width: 140vmax;
+      height: 140vmax;
+      background: repeating-conic-gradient(
+        from 0deg,
+        rgba(245,
