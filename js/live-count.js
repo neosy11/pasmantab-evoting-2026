@@ -1,5 +1,5 @@
 /**
- * PASMANTAB e-VOTING 2026 — Projector Virtual Ballot Reveal Controller
+ * PASMANTAB e-VOTING 2026 — Projector Virtual Ballot Reveal & Ceremony Controller
  */
 (function () {
   const Utils = window.PasmantabUtils;
@@ -13,12 +13,20 @@
   let isPaused = false;
   let soundEnabled = true;
   let revealTimer = null;
+  let ceremonyDelayTimer = null;
   let audioCtx = null;
+  let confettiAnimId = null;
+
+  let orgNameLabel = "PASKIBRA MAN 4 BANJAR";
+  let periodLabel = "2027";
+  let lastCrownedWinner = null;
+  let lastCrownedVotes = 0;
 
   const startBtn = document.getElementById("btn-start-reveal");
   const pauseBtn = document.getElementById("btn-pause-reveal");
   const resetBtn = document.getElementById("btn-reset-reveal");
   const skipBtn = document.getElementById("btn-skip-reveal");
+  const showCeremonyBtn = document.getElementById("btn-show-ceremony");
   const speedSelect = document.getElementById("select-reveal-speed");
   const soundBtn = document.getElementById("btn-toggle-sound");
   const fullscreenBtn = document.getElementById("btn-fullscreen");
@@ -31,7 +39,14 @@
   const participationPill = document.getElementById("participation-pill");
   const gridEl = document.getElementById("projector-candidates-grid");
 
-  // Efek suara lonceng digital menggunakan Web Audio API bawaan browser
+  const ceremonyOverlay = document.getElementById("winner-ceremony-overlay");
+  const confettiCanvas = document.getElementById("confetti-canvas");
+  const closeCeremonyBtn = document.getElementById("btn-close-ceremony");
+  const replayConfettiBtn = document.getElementById("btn-replay-confetti");
+
+  // ==========================================================================
+  // 1. AUDIO SYNTHESIZER (LONCENG SURAT SUARA & FANFARE PENGESAHAN)
+  // ==========================================================================
   function playTone(freq, duration, type = "sine", volume = 0.12) {
     if (!soundEnabled) return;
     try {
@@ -60,13 +75,79 @@
   }
 
   function playWinnerFanfare() {
-    playTone(523.25, 0.25, "triangle", 0.14);
-    setTimeout(() => playTone(659.25, 0.25, "triangle", 0.14), 140);
-    setTimeout(() => playTone(783.99, 0.3, "triangle", 0.15), 280);
-    setTimeout(() => playTone(1046.5, 0.65, "triangle", 0.18), 430);
+    const notes = [
+      { f: 523.25, t: 0, d: 0.25 },
+      { f: 659.25, t: 130, d: 0.25 },
+      { f: 783.99, t: 260, d: 0.28 },
+      { f: 1046.5, t: 400, d: 0.65 },
+      { f: 783.99, t: 620, d: 0.22 },
+      { f: 1046.5, t: 780, d: 0.9 }
+    ];
+    notes.forEach((n) => {
+      setTimeout(() => playTone(n.f, n.d, "triangle", 0.16), n.t);
+    });
   }
 
-  // Fisher-Yates Shuffle agar urutan pembacaan surat suara teracak adil & menegangkan
+  // ==========================================================================
+  // 2. ANIMASI KONFETI EMAS & MERAH MARUN
+  // ==========================================================================
+  function stopConfetti() {
+    if (confettiAnimId) {
+      cancelAnimationFrame(confettiAnimId);
+      confettiAnimId = null;
+    }
+    if (confettiCanvas) {
+      const ctx = confettiCanvas.getContext("2d");
+      if (ctx) ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+    }
+  }
+
+  function startConfetti() {
+    stopConfetti();
+    if (!confettiCanvas) return;
+    const ctx = confettiCanvas.getContext("2d");
+    confettiCanvas.width = window.innerWidth;
+    confettiCanvas.height = window.innerHeight;
+
+    const palette = ["#F59E0B", "#FDE68A", "#C81E1E", "#FFFFFF", "#D97706"];
+    const pieces = Array.from({ length: 130 }, () => ({
+      x: Math.random() * confettiCanvas.width,
+      y: Math.random() * confettiCanvas.height - confettiCanvas.height,
+      w: Math.random() * 10 + 6,
+      h: Math.random() * 6 + 4,
+      color: palette[Math.floor(Math.random() * palette.length)],
+      vx: (Math.random() - 0.5) * 2.4,
+      vy: Math.random() * 3.2 + 2.1,
+      angle: Math.random() * Math.PI * 2,
+      spin: (Math.random() - 0.5) * 0.12
+    }));
+
+    function drawFrame() {
+      ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+      pieces.forEach((p) => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.angle += p.spin;
+        if (p.y > confettiCanvas.height + 20) {
+          p.y = -15;
+          p.x = Math.random() * confettiCanvas.width;
+        }
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.angle);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        ctx.restore();
+      });
+      confettiAnimId = requestAnimationFrame(drawFrame);
+    }
+
+    drawFrame();
+  }
+
+  // ==========================================================================
+  // 3. PENGACAKAN & TAMPILAN KARTU KANDIDAT
+  // ==========================================================================
   function shuffleArray(arr) {
     const copy = arr.slice();
     for (let i = copy.length - 1; i > 0; i--) {
@@ -152,6 +233,45 @@
     revealedCountEl.textContent = String(currentIndex);
   }
 
+  // ==========================================================================
+  // 4. LAYAR PENGESAHAN KETUA TERPILIH
+  // ==========================================================================
+  function openWinnerCeremony(winner, votesCount) {
+    if (!winner || !ceremonyOverlay) return;
+    lastCrownedWinner = winner;
+    lastCrownedVotes = votesCount;
+
+    const total = Math.max(ballotDeck.length, 1);
+    const pct = ((votesCount / total) * 100).toFixed(1);
+    const numFormatted = String(winner.candidate_number).padStart(2, "0");
+    const initials = getInitials(winner.full_name);
+    const safeName = Utils.escapeHTML(winner.full_name);
+
+    document.getElementById("ceremony-org-header").textContent = orgNameLabel;
+    document.getElementById("ceremony-title-heading").textContent =
+      `KETUA TERPILIH PERIODE ${periodLabel}`;
+    document.getElementById("ceremony-number-digits").textContent = numFormatted;
+    document.getElementById("ceremony-winner-name").textContent = winner.full_name;
+    document.getElementById("ceremony-vote-stats").textContent =
+      `Perolehan Sah: ${votesCount} dari ${ballotDeck.length} Suara (${pct}%)`;
+
+    const photoSlot = document.getElementById("ceremony-photo-slot");
+    photoSlot.innerHTML = winner.photo_url
+      ? `<img src="${Utils.escapeHTML(winner.photo_url)}" alt="${safeName}" class="ceremony-photo-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+         <div class="ceremony-photo-initials" style="display:none;">${initials}</div>`
+      : `<div class="ceremony-photo-initials">${initials}</div>`;
+
+    ceremonyOverlay.classList.remove("hidden");
+    showCeremonyBtn.classList.remove("hidden");
+    playWinnerFanfare();
+    startConfetti();
+  }
+
+  function closeWinnerCeremony() {
+    if (ceremonyOverlay) ceremonyOverlay.classList.add("hidden");
+    stopConfetti();
+  }
+
   function finishReveal() {
     isRunning = false;
     isPaused = false;
@@ -161,7 +281,6 @@
     skipBtn.classList.add("hidden");
     resetBtn.classList.remove("hidden");
 
-    // Cari peraih suara terbanyak
     let maxVotes = -1;
     candidates.forEach((c) => {
       const v = currentCounts[c.id] || 0;
@@ -185,17 +304,21 @@
     if (winners.length === 1) {
       const w = winners[0];
       const num = String(w.candidate_number).padStart(2, "0");
-      ballotMeta.textContent = "PENGHITUNGAN SUARA SELESAI • HASIL FINAL";
+      ballotMeta.textContent = "PENGHITUNGAN SUARA SELESAI • MENGESAHKAN KETUA TERPILIH...";
       ballotHeadline.textContent = `Suara Terbanyak: Nomor Urut ${num} — ${w.full_name} (${maxVotes} Suara)`;
+
+      // Jeda 1,4 detik agar papan grafik terlihat lalu langsung buka animasi pengesahan
+      ceremonyDelayTimer = setTimeout(() => {
+        openWinnerCeremony(w, maxVotes);
+      }, 1400);
     } else if (winners.length > 1) {
       ballotMeta.textContent = "PENGHITUNGAN SUARA SELESAI • HASIL IMBANG";
       ballotHeadline.textContent = `Terdapat perolehan suara imbang (${maxVotes} suara). Keputusan mengikuti tata tertib musyawarah.`;
+      playWinnerFanfare();
     } else {
       ballotMeta.textContent = "PENGHITUNGAN SUARA SELESAI";
       ballotHeadline.textContent = "Belum ada surat suara yang masuk.";
     }
-
-    playWinnerFanfare();
   }
 
   function stepNextBallot() {
@@ -233,6 +356,10 @@
     isRunning = false;
     isPaused = false;
     clearTimeout(revealTimer);
+    clearTimeout(ceremonyDelayTimer);
+    closeWinnerCeremony();
+    lastCrownedWinner = null;
+
     currentIndex = 0;
     currentCounts = {};
     candidates.forEach((c) => {
@@ -255,9 +382,12 @@
     pauseBtn.textContent = "Jeda (Pause)";
     resetBtn.classList.add("hidden");
     skipBtn.classList.add("hidden");
+    showCeremonyBtn.classList.add("hidden");
   }
 
-  // Event Listeners Kontrol Operator
+  // ==========================================================================
+  // 5. EVENT LISTENERS KONTROL OPERATOR
+  // ==========================================================================
   startBtn.addEventListener("click", () => {
     if (ballotDeck.length === 0) return;
     isRunning = true;
@@ -297,6 +427,26 @@
     finishReveal();
   });
 
+  if (showCeremonyBtn) {
+    showCeremonyBtn.addEventListener("click", () => {
+      if (lastCrownedWinner) {
+        openWinnerCeremony(lastCrownedWinner, lastCrownedVotes);
+      }
+    });
+  }
+
+  if (closeCeremonyBtn) {
+    closeCeremonyBtn.addEventListener("click", closeWinnerCeremony);
+  }
+
+  if (replayConfettiBtn) {
+    replayConfettiBtn.addEventListener("click", () => {
+      if (lastCrownedWinner) {
+        openWinnerCeremony(lastCrownedWinner, lastCrownedVotes);
+      }
+    });
+  }
+
   soundBtn.addEventListener("click", () => {
     soundEnabled = !soundEnabled;
     soundBtn.textContent = soundEnabled ? "Suara: Aktif" : "Suara: Hening";
@@ -313,7 +463,16 @@
     }
   });
 
-  // Inisialisasi & Validasi Hak Akses Panitia
+  window.addEventListener("resize", () => {
+    if (confettiCanvas && !ceremonyOverlay.classList.contains("hidden")) {
+      confettiCanvas.width = window.innerWidth;
+      confettiCanvas.height = window.innerHeight;
+    }
+  });
+
+  // ==========================================================================
+  // 6. INISIALISASI & VALIDASI HAK AKSES PANITIA
+  // ==========================================================================
   document.addEventListener("DOMContentLoaded", async () => {
     try {
       const supabase = SbService.getClient();
@@ -341,20 +500,48 @@
         .eq("id", 1)
         .single();
 
-      if (settings && settings.status === "OPEN") {
-        Utils.showAlert(
-          "proj-alert",
-          "warning",
-          "Perhatian: Status pemilihan masih OPEN. Tutup pemilihan (CLOSED) terlebih dahulu di menu Election Control agar tidak ada suara susulan saat pembacaan dimulai."
-        );
+      if (settings) {
+        if (settings.org_name) orgNameLabel = settings.org_name.toUpperCase();
+        if (settings.period_label) periodLabel = settings.period_label;
+
+        const mainTitleEl = document.getElementById("proj-main-title");
+        const subTitleEl = document.getElementById("proj-subtitle");
+        if (mainTitleEl) {
+          mainTitleEl.textContent = `LIVE COUNT — PEMILIHAN KETUA PERIODE ${periodLabel}`;
+        }
+        if (subTitleEl) {
+          subTitleEl.textContent = `${orgNameLabel} • PEMBACAAN SURAT SUARA VIRTUAL`;
+        }
+
+        if (settings.status === "OPEN") {
+          Utils.showAlert(
+            "proj-alert",
+            "warning",
+            "Perhatian: Status pemilihan masih OPEN. Tutup pemilihan (CLOSED) terlebih dahulu di menu Election Control agar tidak ada suara susulan saat pembacaan dimulai."
+          );
+        }
       }
+
+      // Ambil juga foto kandidat agar tampil di kartu & layar pengesahan
+      const { data: candPhotos } = await supabase
+        .from("candidates")
+        .select("id, photo_url")
+        .eq("position", "CHAIRPERSON");
+
+      const photoMap = {};
+      (candPhotos || []).forEach((item) => {
+        photoMap[item.id] = item.photo_url || null;
+      });
 
       const { data: tally, error: tallyErr } = await supabase.rpc("get_election_tally");
       if (tallyErr) throw tallyErr;
 
-      candidates = tally.chairperson || [];
-      ballotDeck = [];
+      candidates = (tally.chairperson || []).map((c) => ({
+        ...c,
+        photo_url: photoMap[c.id] || null
+      }));
 
+      ballotDeck = [];
       candidates.forEach((cand) => {
         const votes = Number(cand.votes) || 0;
         for (let i = 0; i < votes; i++) {
