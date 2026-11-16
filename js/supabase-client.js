@@ -90,3 +90,21 @@
     mapFriendlyError
   };
 })();
+// Jembatan RPC pengiriman surat suara atomik (Tahap 3)
+if (window.SupabaseService) {
+  window.SupabaseService.rpc = Object.assign(window.SupabaseService.rpc || {}, {
+    async submitBallotAtomic(payload = {}) {
+      const client = window.SupabaseService.getClient();
+      const { data, error } = await client.rpc("cast_ballot_atomic", {
+        p_full_name: payload.p_full_name || payload.fullName || payload.full_name,
+        p_class_name: payload.p_class_name || payload.className || payload.class_name,
+        p_raw_token: payload.p_raw_token || payload.rawToken || payload.raw_token,
+        p_chairperson_id:
+          payload.p_chairperson_id || payload.chairpersonId || payload.chairperson_id,
+        p_device_id: payload.p_device_id || payload.deviceId || payload.device_id || null
+      });
+      if (error) throw error;
+      return data || { ok: true };
+    }
+  });
+}
