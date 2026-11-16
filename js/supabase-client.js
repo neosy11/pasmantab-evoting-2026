@@ -89,8 +89,7 @@
     getClient: getSupabase,
     mapFriendlyError
   };
-})();
-// Jembatan RPC pengiriman surat suara atomik (Tahap 3)
+  // Jembatan RPC pengiriman surat suara atomik (Tahap 3)
 if (window.SupabaseService) {
   window.SupabaseService.rpc = Object.assign(window.SupabaseService.rpc || {}, {
     async submitBallotAtomic(payload = {}) {
@@ -108,3 +107,4 @@ if (window.SupabaseService) {
     }
   });
 }
+})();
