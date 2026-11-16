@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard Panitia — PASMANTAB e-VOTING 2026</title>
   <link rel="icon" type="image/png" href="../assets/logo-pasmantab.png" />
-  <link rel="stylesheet" href="../css/tokens.css" />
-  <link rel="stylesheet" href="../css/main.css" />
-  <link rel="stylesheet" href="../css/admin.css" />
+  <link rel="stylesheet" href="../css/tokens.css?v=4" />
+  <link rel="stylesheet" href="../css/main.css?v=4" />
+  <link rel="stylesheet" href="../css/admin.css?v=4" />
   <!-- Libraries via CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -363,7 +363,12 @@
               <h1 style="font-size:1.45rem;">Rekapitulasi Perolehan Suara Ketua</h1>
               <p class="text-muted" style="font-size:0.875rem;">Hasil resmi pemilihan Ketua Paskibra MAN 4 Banjar.</p>
             </div>
-            <button type="button" id="btn-refresh-results" class="btn btn-outline btn-sm">Hitung Ulang Suara</button>
+            <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+              <a href="./live-count.html" class="btn btn-burgundy btn-sm">
+                Buka Mode Proyektor (Live Count)
+              </a>
+              <button type="button" id="btn-refresh-results" class="btn btn-outline btn-sm">Hitung Ulang Suara</button>
+            </div>
           </div>
 
           <div class="stats-grid">
@@ -455,165 +460,3 @@
         <section id="tab-settings" class="admin-tab-panel hidden">
           <div class="section-header-row">
             <div>
-              <h1 style="font-size:1.45rem;">Pengaturan Organisasi &amp; Periode</h1>
-              <p class="text-muted" style="font-size:0.875rem;">Sesuaikan identitas organisasi dan label periode kepengurusan pada halaman publik.</p>
-            </div>
-          </div>
-
-          <div class="card" style="max-width:600px;">
-            <form id="form-org-settings">
-              <div class="form-group">
-                <label for="setting-org-name" class="form-label">Nama Organisasi</label>
-                <input type="text" id="setting-org-name" class="form-input" required />
-              </div>
-
-              <div class="form-group">
-                <label for="setting-period-label" class="form-label">Periode Kepengurusan</label>
-                <input type="text" id="setting-period-label" class="form-input" placeholder="2026/2027" required />
-              </div>
-
-              <button type="submit" class="btn btn-burgundy">Simpan Pengaturan</button>
-            </form>
-          </div>
-        </section>
-      </div>
-    </div>
-  </div>
-
-  <!-- ======================================================================
-       MODAL 1: TAMBAH / EDIT KANDIDAT KETUA
-       ====================================================================== -->
-  <div id="modal-candidate" class="modal-overlay hidden" role="dialog" aria-modal="true">
-    <div class="modal-box">
-      <div class="modal-header">
-        <h2 id="modal-candidate-title" style="font-size:1.15rem;">Tambah Calon Ketua</h2>
-        <button type="button" class="btn btn-outline btn-sm js-close-modal" data-modal="modal-candidate">Tutup</button>
-      </div>
-      <form id="form-candidate">
-        <input type="hidden" id="cand-id" />
-        <div class="form-group">
-          <label for="cand-number" class="form-label">Nomor Urut</label>
-          <input type="number" id="cand-number" class="form-input" min="1" max="99" required />
-        </div>
-        <div class="form-group">
-          <label for="cand-name" class="form-label">Nama Lengkap Calon Ketua</label>
-          <input type="text" id="cand-name" class="form-input" required />
-        </div>
-        <div class="form-group">
-          <label for="cand-photo-file" class="form-label">Unggah Foto Kandidat (JPG/PNG, Opsional)</label>
-          <input type="file" id="cand-photo-file" class="form-input" accept="image/png,image/jpeg,image/webp" style="padding:0.55rem;" />
-          <input type="hidden" id="cand-photo-url" />
-          <span class="form-hint">Jika tidak diunggah, sistem menampilkan inisial nama kandidat secara otomatis.</span>
-        </div>
-        <div class="form-group">
-          <label for="cand-vision" class="form-label">Visi</label>
-          <textarea id="cand-vision" class="form-input" rows="2" required></textarea>
-        </div>
-        <div class="form-group">
-          <label for="cand-mission" class="form-label">Misi</label>
-          <textarea id="cand-mission" class="form-input" rows="4" required></textarea>
-        </div>
-        <div class="form-group">
-          <label for="cand-program" class="form-label">Program Unggulan (Opsional)</label>
-          <textarea id="cand-program" class="form-input" rows="2"></textarea>
-        </div>
-        <label style="display:flex; align-items:center; gap:0.5rem; font-size:0.875rem;">
-          <input type="checkbox" id="cand-active" checked style="width:18px;height:18px;accent-color:var(--color-primary-red);" />
-          <span>Kandidat Aktif (Ditampilkan di Surat Suara)</span>
-        </label>
-        <div class="modal-actions">
-          <button type="button" class="btn btn-outline js-close-modal" data-modal="modal-candidate">Batal</button>
-          <button type="submit" id="btn-save-candidate" class="btn btn-primary">Simpan Kandidat</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- ======================================================================
-       MODAL 2: TAMBAH / EDIT PEMILIH (DPT)
-       ====================================================================== -->
-  <div id="modal-voter" class="modal-overlay hidden" role="dialog" aria-modal="true">
-    <div class="modal-box">
-      <div class="modal-header">
-        <h2 id="modal-voter-title" style="font-size:1.15rem;">Tambah Anggota Pemilih</h2>
-        <button type="button" class="btn btn-outline btn-sm js-close-modal" data-modal="modal-voter">Tutup</button>
-      </div>
-      <form id="form-voter">
-        <input type="hidden" id="voter-id" />
-        <div class="form-group">
-          <label for="voter-fullname" class="form-label">Nama Lengkap Anggota</label>
-          <input type="text" id="voter-fullname" class="form-input" placeholder="Contoh: Ahmad Fauzan" required />
-        </div>
-        <div class="form-group">
-          <label for="voter-class" class="form-label">Kelas</label>
-          <input type="text" id="voter-class" class="form-input" placeholder="Contoh: XI IPA 1" required />
-        </div>
-        <label style="display:flex; align-items:center; gap:0.5rem; font-size:0.875rem;">
-          <input type="checkbox" id="voter-eligible" checked style="width:18px;height:18px;accent-color:var(--color-primary-red);" />
-          <span>Memenuhi Syarat Memilih (Eligible)</span>
-        </label>
-        <div class="modal-actions">
-          <button type="button" class="btn btn-outline js-close-modal" data-modal="modal-voter">Batal</button>
-          <button type="submit" class="btn btn-primary">Simpan Data Pemilih</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- ======================================================================
-       MODAL 3: IMPOR CSV DAFTAR PEMILIH
-       ====================================================================== -->
-  <div id="modal-import-csv" class="modal-overlay hidden" role="dialog" aria-modal="true">
-    <div class="modal-box">
-      <div class="modal-header">
-        <h2 style="font-size:1.15rem;">Impor Daftar Pemilih (CSV)</h2>
-        <button type="button" class="btn btn-outline btn-sm js-close-modal" data-modal="modal-import-csv">Tutup</button>
-      </div>
-      <p class="text-muted mb-2" style="font-size:0.85rem;">
-        Unggah file <code>.csv</code> dengan format 2 kolom: <strong>Nama Lengkap, Kelas</strong> (pisahkan dengan koma atau titik koma).
-      </p>
-      <div class="alert alert-info" style="font-size:0.8rem;">
-        Contoh isi file CSV:<br />
-        Nama Lengkap,Kelas<br />
-        Muhammad Rizky,XII IPA 1<br />
-        Siti Aisyah,XI IPS 2
-      </div>
-      <div class="form-group">
-        <input type="file" id="csv-file-input" class="form-input" accept=".csv,text/csv" style="padding:0.55rem;" />
-      </div>
-      <div class="modal-actions">
-        <button type="button" class="btn btn-outline js-close-modal" data-modal="modal-import-csv">Batal</button>
-        <button type="button" id="btn-process-csv" class="btn btn-primary">Proses Impor CSV</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ======================================================================
-       MODAL 4: UBAH WAKTU KEDALUWARSA TOKEN AKTIF
-       ====================================================================== -->
-  <div id="modal-token-expiry" class="modal-overlay hidden" role="dialog" aria-modal="true">
-    <div class="modal-box" style="max-width:440px;">
-      <div class="modal-header">
-        <h2 style="font-size:1.1rem;">Ubah Waktu Kedaluwarsa Token</h2>
-        <button type="button" class="btn btn-outline btn-sm js-close-modal" data-modal="modal-token-expiry">Tutup</button>
-      </div>
-      <form id="form-update-expiry">
-        <input type="hidden" id="expiry-token-id" />
-        <div class="form-group">
-          <label for="new-expiry-datetime" class="form-label">Waktu Kedaluwarsa Baru</label>
-          <input type="datetime-local" id="new-expiry-datetime" class="form-input" required />
-        </div>
-        <div class="modal-actions">
-          <button type="button" class="btn btn-outline js-close-modal" data-modal="modal-token-expiry">Batal</button>
-          <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <script src="../js/config.js"></script>
-  <script src="../js/supabase-client.js"></script>
-  <script src="../js/utils.js"></script>
-  <script src="../js/admin-dashboard.js"></script>
-</body>
-</html>
