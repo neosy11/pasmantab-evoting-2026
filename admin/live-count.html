@@ -1,381 +1,573 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Live Count Proyektor — PASMANTAB e-VOTING 2026</title>
-  <link rel="icon" type="image/png" href="../assets/logo-pasmantab.png" />
-  <link rel="stylesheet" href="../css/tokens.css?v=6" />
-  <link rel="stylesheet" href="../css/main.css?v=6" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    body {
-      background: radial-gradient(circle at top, #271016 0%, #141417 65%);
-      color: #FFFFFF;
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
+/**
+ * PASMANTAB e-VOTING 2026 — Projector Virtual Ballot Reveal & Ceremony Controller
+ */
+(function () {
+  const Utils = window.PasmantabUtils;
+  const SbService = window.SupabaseService;
 
-    .projector-topbar {
-      background: rgba(20, 20, 23, 0.85);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      padding: 0.85rem 1.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 0.75rem;
-      position: sticky;
-      top: 0;
-      z-index: 30;
-    }
+  let candidates = [];
+  let ballotDeck = [];
+  let currentCounts = {};
+  let currentIndex = 0;
+  let isRunning = false;
+  let isPaused = false;
+  let soundEnabled = true;
+  let revealTimer = null;
+  let ceremonyDelayTimer = null;
+  let audioCtx = null;
+  let confettiAnimId = null;
 
-    .projector-brand {
-      display: flex;
-      align-items: center;
-      gap: 0.85rem;
-    }
+  let orgNameLabel = "PASKIBRA MAN 4 BANJAR";
+  let periodLabel = "2027";
+  let lastCrownedWinner = null;
+  let lastCrownedVotes = 0;
 
-    .projector-brand img {
-      width: 42px;
-      height: 42px;
-      border-radius: 10px;
-      background: #FFFFFF;
-      padding: 2px;
-    }
+  const startBtn = document.getElementById("btn-start-reveal");
+  const pauseBtn = document.getElementById("btn-pause-reveal");
+  const resetBtn = document.getElementById("btn-reset-reveal");
+  const skipBtn = document.getElementById("btn-skip-reveal");
+  const showCeremonyBtn = document.getElementById("btn-show-ceremony");
+  const speedSelect = document.getElementById("select-reveal-speed");
+  const soundBtn = document.getElementById("btn-toggle-sound");
+  const fullscreenBtn = document.getElementById("btn-fullscreen");
 
-    .projector-controls {
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-    }
+  const ballotBox = document.getElementById("virtual-ballot-box");
+  const ballotMeta = document.getElementById("ballot-meta");
+  const ballotHeadline = document.getElementById("ballot-headline");
+  const revealedCountEl = document.getElementById("revealed-count");
+  const totalBallotsEl = document.getElementById("total-ballots-count");
+  const participationPill = document.getElementById("participation-pill");
+  const gridEl = document.getElementById("projector-candidates-grid");
 
-    .speed-select {
-      min-height: 40px;
-      padding: 0.35rem 0.75rem;
-      border-radius: 10px;
-      background: rgba(255, 255, 255, 0.08);
-      color: #FFFFFF;
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      font-family: var(--font-sans);
-      font-size: 0.82rem;
-      cursor: pointer;
-    }
+  const ceremonyOverlay = document.getElementById("winner-ceremony-overlay");
+  const confettiCanvas = document.getElementById("confetti-canvas");
+  const closeCeremonyBtn = document.getElementById("btn-close-ceremony");
+  const replayConfettiBtn = document.getElementById("btn-replay-confetti");
 
-    .speed-select option {
-      background: #18181B;
-      color: #FFFFFF;
-    }
-
-    .btn-glass {
-      min-height: 40px;
-      padding: 0.4rem 0.9rem;
-      border-radius: 10px;
-      background: rgba(255, 255, 255, 0.08);
-      color: #FFFFFF;
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      font-size: 0.82rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 160ms ease;
-    }
-
-    .btn-glass:hover:not(:disabled) {
-      background: rgba(255, 255, 255, 0.16);
-    }
-
-    .btn-gold-glass {
-      min-height: 40px;
-      padding: 0.4rem 0.95rem;
-      border-radius: 10px;
-      background: linear-gradient(135deg, #D97706 0%, #B45309 100%);
-      color: #FFFFFF;
-      border: 1px solid #FBBF24;
-      font-size: 0.82rem;
-      font-weight: 700;
-      cursor: pointer;
-      box-shadow: 0 4px 14px rgba(217, 119, 6, 0.35);
-      transition: transform 160ms ease, filter 160ms ease;
-    }
-
-    .btn-gold-glass:hover {
-      filter: brightness(1.08);
-      transform: translateY(-1px);
-    }
-
-    .projector-container {
-      max-width: 1180px;
-      margin: 0 auto;
-      padding: 1.5rem 1.25rem 3rem;
-    }
-
-    /* Panggung Pembacaan Surat Suara Virtual */
-    .ballot-stage {
-      background: linear-gradient(145deg, rgba(107, 20, 38, 0.42) 0%, rgba(24, 24, 27, 0.92) 100%);
-      border: 1px solid rgba(243, 208, 215, 0.22);
-      border-radius: 20px;
-      padding: 1.5rem;
-      margin-bottom: 1.75rem;
-      display: grid;
-      grid-template-columns: 1fr auto;
-      align-items: center;
-      gap: 1.25rem;
-      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.4);
-    }
-
-    @media (max-width: 768px) {
-      .ballot-stage {
-        grid-template-columns: 1fr;
-        text-align: center;
+  function playTone(freq, duration, type = "sine", volume = 0.12) {
+    if (!soundEnabled) return;
+    try {
+      if (!audioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContextClass();
       }
-    }
-
-    .virtual-ballot-card {
-      background: #FFFFFF;
-      color: #18181B;
-      border-radius: 14px;
-      padding: 1.1rem 1.4rem;
-      border-left: 6px solid #C81E1E;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
-      min-height: 92px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      transition: transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
-    }
-
-    .virtual-ballot-card.pop {
-      transform: scale(1.02);
-    }
-
-    .ballot-meta-tag {
-      font-family: var(--font-mono);
-      font-size: 0.75rem;
-      font-weight: 700;
-      color: #6B1426;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      margin-bottom: 0.25rem;
-    }
-
-    .ballot-choice-headline {
-      font-family: var(--font-heading);
-      font-size: clamp(1.15rem, 2.5vw, 1.55rem);
-      font-weight: 800;
-      color: #18181B;
-    }
-
-    .stage-counter-box {
-      text-align: right;
-      min-width: 190px;
-    }
-
-    @media (max-width: 768px) {
-      .stage-counter-box {
-        text-align: center;
+      if (audioCtx.state === "suspended") {
+        audioCtx.resume();
       }
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      gain.gain.setValueAtTime(volume, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + duration);
+    } catch (_) {}
+  }
+
+  function playBallotChime() {
+    playTone(660, 0.14, "triangle", 0.1);
+  }
+
+  function playWinnerFanfare() {
+    const notes = [
+      { f: 523.25, t: 0, d: 0.25 },
+      { f: 659.25, t: 130, d: 0.25 },
+      { f: 783.99, t: 260, d: 0.28 },
+      { f: 1046.5, t: 400, d: 0.65 },
+      { f: 783.99, t: 620, d: 0.22 },
+      { f: 1046.5, t: 780, d: 0.9 }
+    ];
+    notes.forEach((n) => {
+      setTimeout(() => playTone(n.f, n.d, "triangle", 0.16), n.t);
+    });
+  }
+
+  function stopConfetti() {
+    if (confettiAnimId) {
+      cancelAnimationFrame(confettiAnimId);
+      confettiAnimId = null;
+    }
+    if (confettiCanvas) {
+      const ctx = confettiCanvas.getContext("2d");
+      if (ctx) ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+    }
+  }
+
+  function startConfetti() {
+    stopConfetti();
+    if (!confettiCanvas) return;
+    const ctx = confettiCanvas.getContext("2d");
+    confettiCanvas.width = window.innerWidth;
+    confettiCanvas.height = window.innerHeight;
+
+    const palette = ["#F59E0B", "#FDE68A", "#C81E1E", "#FFFFFF", "#D97706"];
+    const pieces = Array.from({ length: 130 }, () => ({
+      x: Math.random() * confettiCanvas.width,
+      y: Math.random() * confettiCanvas.height - confettiCanvas.height,
+      w: Math.random() * 10 + 6,
+      h: Math.random() * 6 + 4,
+      color: palette[Math.floor(Math.random() * palette.length)],
+      vx: (Math.random() - 0.5) * 2.4,
+      vy: Math.random() * 3.2 + 2.1,
+      angle: Math.random() * Math.PI * 2,
+      spin: (Math.random() - 0.5) * 0.12
+    }));
+
+    function drawFrame() {
+      ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+      pieces.forEach((p) => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.angle += p.spin;
+        if (p.y > confettiCanvas.height + 20) {
+          p.y = -15;
+          p.x = Math.random() * confettiCanvas.width;
+        }
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.angle);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        ctx.restore();
+      });
+      confettiAnimId = requestAnimationFrame(drawFrame);
     }
 
-    .stage-counter-num {
-      font-family: var(--font-heading);
-      font-size: 2.1rem;
-      font-weight: 800;
-      line-height: 1.1;
-      color: #FFFFFF;
+    drawFrame();
+  }
+
+  function shuffleArray(arr) {
+    const copy = arr.slice();
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
+  }
+
+  function getInitials(fullName) {
+    const parts = String(fullName || "K").trim().split(/\s+/);
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+
+  function renderInitialCards() {
+    if (!candidates || candidates.length === 0) {
+      gridEl.innerHTML = `
+        <div style="grid-column:1/-1; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.18); border-radius:16px; padding:2rem; text-align:center;">
+          <h2 style="font-size:1.2rem; margin-bottom:0.5rem;">Belum Ada Calon Ketua Aktif</h2>
+          <p style="color:#D4D4D8; font-size:0.9rem;">
+            Tambahkan kandidat di menu <strong>2. Candidates</strong> pada Dashboard Panitia terlebih dahulu, lalu muat ulang halaman ini.
+          </p>
+        </div>
+      `;
+      return;
     }
 
-    .stage-counter-label {
-      font-size: 0.78rem;
-      color: #D4D4D8;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      margin-top: 0.25rem;
+    gridEl.innerHTML = candidates
+      .map((cand) => {
+        const num = String(cand.candidate_number).padStart(2, "0");
+        const initials = getInitials(cand.full_name);
+        const safeName = Utils.escapeHTML(cand.full_name);
+
+        const mediaHtml = cand.photo_url
+          ? `<img src="${Utils.escapeHTML(cand.photo_url)}" alt="${safeName}" class="proj-photo" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+             <div class="proj-avatar" style="display:none;">${initials}</div>`
+          : `<div class="proj-avatar">${initials}</div>`;
+
+        return `
+          <article id="proj-card-${cand.id}" class="proj-card">
+            <div id="winner-slot-${cand.id}"></div>
+            <div class="proj-cand-top">
+              ${mediaHtml}
+              <div>
+                <span class="proj-num-tag">NOMOR URUT ${num}</span>
+                <h2 class="proj-cand-name">${safeName}</h2>
+              </div>
+            </div>
+
+            <div class="proj-score-row">
+              <div>
+                <span id="proj-count-${cand.id}" class="proj-vote-count">0</span>
+                <span class="proj-vote-unit">suara</span>
+              </div>
+              <div id="proj-pct-${cand.id}" class="proj-vote-pct">0.0%</div>
+            </div>
+
+            <div class="proj-bar-track">
+              <div id="proj-bar-${cand.id}" class="proj-bar-fill" style="width:0%;"></div>
+            </div>
+          </article>
+        `;
+      })
+      .join("");
+  }
+
+  function updateScoreboardUI(highlightCandidateId = null) {
+    const total = Math.max(ballotDeck.length, 1);
+
+    candidates.forEach((cand) => {
+      const count = currentCounts[cand.id] || 0;
+      const pct = ballotDeck.length > 0 ? ((count / total) * 100).toFixed(1) : "0.0";
+
+      const countEl = document.getElementById(`proj-count-${cand.id}`);
+      const pctEl = document.getElementById(`proj-pct-${cand.id}`);
+      const barEl = document.getElementById(`proj-bar-${cand.id}`);
+      const cardEl = document.getElementById(`proj-card-${cand.id}`);
+
+      if (countEl) countEl.textContent = String(count);
+      if (pctEl) pctEl.textContent = `${pct}%`;
+      if (barEl) barEl.style.width = `${Math.min(Number(pct), 100)}%`;
+
+      if (cardEl) {
+        if (cand.id === highlightCandidateId) {
+          cardEl.classList.remove("flash-vote");
+          void cardEl.offsetWidth;
+          cardEl.classList.add("flash-vote");
+        } else {
+          cardEl.classList.remove("flash-vote");
+        }
+      }
+    });
+
+    revealedCountEl.textContent = String(currentIndex);
+  }
+
+  function openWinnerCeremony(winner, votesCount) {
+    if (!winner || !ceremonyOverlay) return;
+    lastCrownedWinner = winner;
+    lastCrownedVotes = votesCount;
+
+    const total = Math.max(ballotDeck.length, 1);
+    const pct = ((votesCount / total) * 100).toFixed(1);
+    const numFormatted = String(winner.candidate_number).padStart(2, "0");
+    const initials = getInitials(winner.full_name);
+    const safeName = Utils.escapeHTML(winner.full_name);
+
+    document.getElementById("ceremony-org-header").textContent = orgNameLabel;
+    document.getElementById("ceremony-title-heading").textContent =
+      `KETUA TERPILIH PERIODE ${periodLabel}`;
+    document.getElementById("ceremony-number-digits").textContent = numFormatted;
+    document.getElementById("ceremony-winner-name").textContent = winner.full_name;
+    document.getElementById("ceremony-vote-stats").textContent =
+      `Perolehan Sah: ${votesCount} dari ${ballotDeck.length} Suara (${pct}%)`;
+
+    const photoSlot = document.getElementById("ceremony-photo-slot");
+    photoSlot.innerHTML = winner.photo_url
+      ? `<img src="${Utils.escapeHTML(winner.photo_url)}" alt="${safeName}" class="ceremony-photo-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+         <div class="ceremony-photo-initials" style="display:none;">${initials}</div>`
+      : `<div class="ceremony-photo-initials">${initials}</div>`;
+
+    ceremonyOverlay.classList.remove("hidden");
+    showCeremonyBtn.classList.remove("hidden");
+    playWinnerFanfare();
+    startConfetti();
+  }
+
+  function closeWinnerCeremony() {
+    if (ceremonyOverlay) ceremonyOverlay.classList.add("hidden");
+    stopConfetti();
+  }
+
+  function finishReveal() {
+    isRunning = false;
+    isPaused = false;
+    clearTimeout(revealTimer);
+
+    pauseBtn.classList.add("hidden");
+    skipBtn.classList.add("hidden");
+    resetBtn.classList.remove("hidden");
+
+    let maxVotes = -1;
+    candidates.forEach((c) => {
+      const v = currentCounts[c.id] || 0;
+      if (v > maxVotes) maxVotes = v;
+    });
+
+    const winners = candidates.filter((c) => (currentCounts[c.id] || 0) === maxVotes && maxVotes > 0);
+
+    candidates.forEach((c) => {
+      const cardEl = document.getElementById(`proj-card-${c.id}`);
+      const slotEl = document.getElementById(`winner-slot-${c.id}`);
+      if (!cardEl || !slotEl) return;
+
+      cardEl.classList.remove("flash-vote");
+      if (winners.some((w) => w.id === c.id)) {
+        cardEl.classList.add("winner-card");
+        slotEl.innerHTML = `<div class="winner-ribbon">&#9733; PERAIH SUARA TERBANYAK</div>`;
+      }
+    });
+
+    if (winners.length === 1) {
+      const w = winners[0];
+      const num = String(w.candidate_number).padStart(2, "0");
+      ballotMeta.textContent = "PENGHITUNGAN SUARA SELESAI • MENGESAHKAN KETUA TERPILIH...";
+      ballotHeadline.textContent = `Suara Terbanyak: Nomor Urut ${num} — ${w.full_name} (${maxVotes} Suara)`;
+
+      ceremonyDelayTimer = setTimeout(() => {
+        openWinnerCeremony(w, maxVotes);
+      }, 1400);
+    } else if (winners.length > 1) {
+      ballotMeta.textContent = "PENGHITUNGAN SUARA SELESAI • HASIL IMBANG";
+      ballotHeadline.textContent = `Terdapat perolehan suara imbang (${maxVotes} suara). Keputusan mengikuti tata tertib musyawarah.`;
+      playWinnerFanfare();
+    } else {
+      ballotMeta.textContent = "PENGHITUNGAN SUARA SELESAI";
+      ballotHeadline.textContent = "Belum ada surat suara yang masuk.";
+    }
+  }
+
+  function stepNextBallot() {
+    if (!isRunning || isPaused) return;
+
+    if (currentIndex >= ballotDeck.length) {
+      finishReveal();
+      return;
     }
 
-    /* Grid Kartu Kandidat Proyektor */
-    .projector-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(min(100%, 310px), 1fr));
-      gap: 1.35rem;
+    const ballot = ballotDeck[currentIndex];
+    currentIndex += 1;
+    currentCounts[ballot.id] = (currentCounts[ballot.id] || 0) + 1;
+
+    const numFormatted = String(ballot.candidate_number).padStart(2, "0");
+    ballotMeta.textContent = `SURAT SUARA KE-${currentIndex} DARI ${ballotDeck.length} • SAH`;
+    ballotHeadline.textContent = `NOMOR URUT ${numFormatted} — ${ballot.full_name}`;
+
+    ballotBox.classList.remove("pop");
+    void ballotBox.offsetWidth;
+    ballotBox.classList.add("pop");
+
+    updateScoreboardUI(ballot.id);
+    playBallotChime();
+
+    if (currentIndex >= ballotDeck.length) {
+      revealTimer = setTimeout(finishReveal, 650);
+    } else {
+      const delay = Number(speedSelect.value) || 600;
+      revealTimer = setTimeout(stepNextBallot, delay);
+    }
+  }
+
+  function resetAllToZero() {
+    isRunning = false;
+    isPaused = false;
+    clearTimeout(revealTimer);
+    clearTimeout(ceremonyDelayTimer);
+    closeWinnerCeremony();
+    lastCrownedWinner = null;
+
+    currentIndex = 0;
+    currentCounts = {};
+    candidates.forEach((c) => {
+      currentCounts[c.id] = 0;
+      const cardEl = document.getElementById(`proj-card-${c.id}`);
+      const slotEl = document.getElementById(`winner-slot-${c.id}`);
+      if (cardEl) cardEl.classList.remove("winner-card", "flash-vote");
+      if (slotEl) slotEl.innerHTML = "";
+    });
+
+    ballotDeck = shuffleArray(ballotDeck);
+    updateScoreboardUI(null);
+
+    if (ballotDeck.length === 0) {
+      ballotMeta.textContent = "KOTAK SUARA KOSONG (0 SUARA MASUK)";
+      ballotHeadline.textContent = "Belum ada suara masuk. Jalankan simulasi atau buka pemilihan terlebih dahulu.";
+    } else {
+      ballotMeta.textContent = "KOTAK SUARA TERSEGEL • SIAP DIBACAKAN";
+      ballotHeadline.textContent = 'Tekan tombol "Mulai Pembacaan Suara" untuk memulai';
     }
 
-    .proj-card {
-      background: #FFFFFF;
-      color: #18181B;
-      border-radius: 18px;
-      padding: 1.5rem;
-      border: 2px solid transparent;
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
-      transition: transform 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
-      position: relative;
-      overflow: hidden;
-    }
+    startBtn.disabled = ballotDeck.length === 0;
+    startBtn.classList.remove("hidden");
+    pauseBtn.classList.add("hidden");
+    pauseBtn.textContent = "Jeda (Pause)";
+    resetBtn.classList.add("hidden");
+    skipBtn.classList.add("hidden");
+    showCeremonyBtn.classList.add("hidden");
+  }
 
-    .proj-card.flash-vote {
-      transform: translateY(-4px) scale(1.015);
-      border-color: #C81E1E;
-      box-shadow: 0 0 0 5px rgba(200, 30, 30, 0.28), 0 18px 36px rgba(0, 0, 0, 0.4);
-    }
+  startBtn.addEventListener("click", () => {
+    if (ballotDeck.length === 0) return;
+    isRunning = true;
+    isPaused = false;
+    startBtn.classList.add("hidden");
+    pauseBtn.classList.remove("hidden");
+    resetBtn.classList.remove("hidden");
+    skipBtn.classList.remove("hidden");
+    stepNextBallot();
+  });
 
-    .proj-card.winner-card {
-      border-color: #D97706;
-      background: linear-gradient(180deg, #FFFBEB 0%, #FFFFFF 45%);
-      box-shadow: 0 0 0 5px rgba(245, 158, 11, 0.35), 0 20px 45px rgba(0, 0, 0, 0.45);
+  pauseBtn.addEventListener("click", () => {
+    if (!isRunning) return;
+    isPaused = !isPaused;
+    if (isPaused) {
+      clearTimeout(revealTimer);
+      pauseBtn.textContent = "Lanjutkan";
+      ballotMeta.textContent = `DIJEDA PADA SURAT SUARA KE-${currentIndex} DARI ${ballotDeck.length}`;
+    } else {
+      pauseBtn.textContent = "Jeda (Pause)";
+      stepNextBallot();
     }
+  });
 
-    .winner-ribbon {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      background: linear-gradient(135deg, #D97706 0%, #B45309 100%);
-      color: #FFFFFF;
-      font-size: 0.72rem;
-      font-weight: 800;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      padding: 0.3rem 0.75rem;
-      border-radius: 999px;
-      margin-bottom: 0.75rem;
+  resetBtn.addEventListener("click", () => {
+    resetAllToZero();
+  });
+
+  skipBtn.addEventListener("click", () => {
+    clearTimeout(revealTimer);
+    while (currentIndex < ballotDeck.length) {
+      const b = ballotDeck[currentIndex];
+      currentIndex += 1;
+      currentCounts[b.id] = (currentCounts[b.id] || 0) + 1;
     }
+    updateScoreboardUI(null);
+    finishReveal();
+  });
 
-    .proj-cand-top {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      margin-bottom: 1.25rem;
+  if (showCeremonyBtn) {
+    showCeremonyBtn.addEventListener("click", () => {
+      if (lastCrownedWinner) {
+        openWinnerCeremony(lastCrownedWinner, lastCrownedVotes);
+      }
+    });
+  }
+
+  if (closeCeremonyBtn) {
+    closeCeremonyBtn.addEventListener("click", closeWinnerCeremony);
+  }
+
+  if (replayConfettiBtn) {
+    replayConfettiBtn.addEventListener("click", () => {
+      if (lastCrownedWinner) {
+        openWinnerCeremony(lastCrownedWinner, lastCrownedVotes);
+      }
+    });
+  }
+
+  soundBtn.addEventListener("click", () => {
+    soundEnabled = !soundEnabled;
+    soundBtn.textContent = soundEnabled ? "Suara: Aktif" : "Suara: Hening";
+    if (soundEnabled) playBallotChime();
+  });
+
+  fullscreenBtn.addEventListener("click", () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+      fullscreenBtn.textContent = "Keluar Layar Penuh";
+    } else {
+      document.exitFullscreen().catch(() => {});
+      fullscreenBtn.textContent = "Layar Penuh";
     }
+  });
 
-    .proj-photo {
-      width: 78px;
-      height: 78px;
-      border-radius: 14px;
-      object-fit: cover;
-      border: 2px solid #E4E4E7;
-      flex-shrink: 0;
+  window.addEventListener("resize", () => {
+    if (confettiCanvas && !ceremonyOverlay.classList.contains("hidden")) {
+      confettiCanvas.width = window.innerWidth;
+      confettiCanvas.height = window.innerHeight;
     }
+  });
 
-    .proj-avatar {
-      width: 78px;
-      height: 78px;
-      border-radius: 14px;
-      background: var(--color-burgundy-gradient);
-      color: #FFFFFF;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: var(--font-heading);
-      font-size: 1.65rem;
-      font-weight: 800;
-      flex-shrink: 0;
+  document.addEventListener("DOMContentLoaded", async () => {
+    try {
+      const supabase = SbService.getClient();
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData || !sessionData.session) {
+        window.location.replace("./login.html");
+        return;
+      }
+
+      const { data: adminProfile, error: adminErr } = await supabase
+        .from("admin_users")
+        .select("id, is_active")
+        .eq("id", sessionData.session.user.id)
+        .eq("is_active", true)
+        .single();
+
+      if (adminErr || !adminProfile) {
+        window.location.replace("./login.html");
+        return;
+      }
+
+      const { data: settings } = await supabase
+        .from("election_settings")
+        .select("*")
+        .eq("id", 1)
+        .single();
+
+      if (settings) {
+        if (settings.org_name) orgNameLabel = settings.org_name.toUpperCase();
+        if (settings.period_label) periodLabel = settings.period_label;
+
+        const mainTitleEl = document.getElementById("proj-main-title");
+        const subTitleEl = document.getElementById("proj-subtitle");
+        if (mainTitleEl) {
+          mainTitleEl.textContent = `LIVE COUNT — PEMILIHAN KETUA PERIODE ${periodLabel}`;
+        }
+        if (subTitleEl) {
+          subTitleEl.textContent = `${orgNameLabel} • PEMBACAAN SURAT SUARA VIRTUAL`;
+        }
+
+        if (settings.status === "OPEN") {
+          Utils.showAlert(
+            "proj-alert",
+            "warning",
+            "Perhatian: Status pemilihan masih OPEN. Tutup pemilihan (CLOSED) terlebih dahulu di menu Election Control agar tidak ada suara susulan saat pembacaan dimulai."
+          );
+        }
+      }
+
+      const { data: dbCandidates } = await supabase
+        .from("candidates")
+        .select("id, candidate_number, full_name, photo_url, is_active")
+        .eq("position", "CHAIRPERSON")
+        .eq("is_active", true)
+        .order("candidate_number", { ascending: true });
+
+      const photoMap = {};
+      (dbCandidates || []).forEach((item) => {
+        photoMap[item.id] = item.photo_url || null;
+      });
+
+      const { data: tally, error: tallyErr } = await supabase.rpc("get_election_tally");
+      if (tallyErr) throw tallyErr;
+
+      const tallyList = (tally && Array.isArray(tally.chairperson) && tally.chairperson.length > 0)
+        ? tally.chairperson
+        : (dbCandidates || []).map((c) => ({
+            id: c.id,
+            candidate_number: c.candidate_number,
+            full_name: c.full_name,
+            votes: 0
+          }));
+
+      candidates = tallyList.map((c) => ({
+        ...c,
+        photo_url: photoMap[c.id] || null
+      }));
+
+      ballotDeck = [];
+      candidates.forEach((cand) => {
+        const votes = Number(cand.votes) || 0;
+        for (let i = 0; i < votes; i++) {
+          ballotDeck.push({
+            id: cand.id,
+            candidate_number: cand.candidate_number,
+            full_name: cand.full_name
+          });
+        }
+      });
+
+      totalBallotsEl.textContent = String(ballotDeck.length);
+      participationPill.textContent = `Total Partisipasi: ${(tally && tally.total_voted) || ballotDeck.length} Anggota Hadir`;
+
+      renderInitialCards();
+      resetAllToZero();
+    } catch (err) {
+      Utils.showAlert("proj-alert", "error", SbService.mapFriendlyError(err));
     }
-
-    .proj-num-tag {
-      font-family: var(--font-mono);
-      font-size: 0.78rem;
-      font-weight: 700;
-      color: #6B1426;
-      background: #FDF2F4;
-      border: 1px solid #F3D0D7;
-      padding: 0.15rem 0.55rem;
-      border-radius: 6px;
-      display: inline-block;
-      margin-bottom: 0.3rem;
-    }
-
-    .proj-cand-name {
-      font-family: var(--font-heading);
-      font-size: 1.25rem;
-      font-weight: 800;
-      color: #18181B;
-      line-height: 1.25;
-    }
-
-    .proj-score-row {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      margin-bottom: 0.6rem;
-    }
-
-    .proj-vote-count {
-      font-family: var(--font-heading);
-      font-size: 2.6rem;
-      font-weight: 800;
-      color: #18181B;
-      line-height: 1;
-    }
-
-    .proj-vote-unit {
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: #71717A;
-      margin-left: 0.35rem;
-    }
-
-    .proj-vote-pct {
-      font-family: var(--font-mono);
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: #6B1426;
-    }
-
-    .proj-bar-track {
-      width: 100%;
-      height: 16px;
-      background: #F3F4F6;
-      border-radius: 999px;
-      overflow: hidden;
-      border: 1px solid #E4E4E7;
-    }
-
-    .proj-bar-fill {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, #6B1426 0%, #C81E1E 100%);
-      border-radius: 999px;
-      transition: width 240ms cubic-bezier(0.2, 0, 0, 1);
-    }
-
-    .proj-card.winner-card .proj-bar-fill {
-      background: linear-gradient(90deg, #B45309 0%, #F59E0B 100%);
-    }
-
-    /* ========================================================================
-       LAYAR PENGESAHAN KETUA TERPILIH (FULLSCREEN CEREMONY OVERLAY)
-       ======================================================================== */
-    .ceremony-overlay {
-      position: fixed;
-      inset: 0;
-      z-index: 100;
-      background: radial-gradient(circle at center, #58111E 0%, #19090D 68%, #0D0608 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 1.5rem;
-      overflow: hidden;
-      animation: ceremonyBgFade 550ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    }
-
-    .ceremony-overlay.hidden {
-      display: none !important;
-    }
-
-    #confetti-canvas {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 1;
-    }
-
-    /* Sorotan sinar berputar halus di belakang kartu pemenang */
-    .ceremony-sunburst {
-      position: absolute;
-      width: 140vmax;
-      height: 140vmax;
-      background: repeating-conic-gradient(
-        from 0deg,
-        rgba(245,
+  });
+})();
