@@ -408,3 +408,1360 @@
     /* GELOMBANG KEJUT TERPUSAT */
     .shockwave-ring {
       position: fixed;
+      top: 50%;
+      left: 50%;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      border: 8px solid #FDE68A;
+      box-shadow:
+        0 0 60px #F59E0B,
+        inset 0 0 40px #F59E0B;
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.3);
+      pointer-events: none;
+      z-index: 6;
+    }
+
+    .shockwave-ring.fire {
+      animation: shockwaveExpand 1200ms cubic-bezier(0.12, 0.85, 0.25, 1) forwards;
+    }
+
+    .shockwave-ring.wave-2.fire {
+      animation-delay: 160ms;
+      border-color: #EF4444;
+      box-shadow: 0 0 60px #C81E1E, inset 0 0 40px #C81E1E;
+    }
+
+    .shockwave-ring.wave-3.fire {
+      animation-delay: 320ms;
+      border-color: #FFFFFF;
+      box-shadow: 0 0 50px #FDE68A;
+    }
+
+    /* FASE 1: ROULETTE KETEGANGAN */
+    .suspense-stage {
+      position: relative;
+      z-index: 5;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .suspense-stage.hidden {
+      display: none !important;
+    }
+
+    .suspense-kicker {
+      font-family: var(--font-mono);
+      font-size: clamp(0.9rem, 2vw, 1.2rem);
+      font-weight: 800;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: #FCD34D;
+      margin-bottom: 1.5rem;
+      animation: pulseGlowText 700ms ease-in-out infinite alternate;
+    }
+
+    .roulette-ring {
+      width: 250px;
+      height: 250px;
+      border-radius: 50%;
+      border: 5px dashed rgba(251, 191, 36, 0.8);
+      box-shadow:
+        0 0 70px rgba(245, 158, 11, 0.55),
+        inset 0 0 50px rgba(200, 30, 30, 0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      background: radial-gradient(circle, rgba(107, 20, 38, 0.85) 0%, rgba(18, 9, 12, 0.96) 75%);
+    }
+
+    .roulette-ring::before {
+      content: "";
+      position: absolute;
+      inset: -16px;
+      border-radius: 50%;
+      border: 3px solid transparent;
+      border-top-color: #FDE68A;
+      border-bottom-color: #EF4444;
+      animation: spinClockwise 900ms linear infinite;
+    }
+
+    .roulette-digits {
+      font-family: var(--font-heading);
+      font-size: 6.8rem;
+      font-weight: 900;
+      line-height: 1;
+      background: linear-gradient(180deg, #FFFFFF 0%, #FDE68A 55%, #D97706 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 6px 24px rgba(245, 158, 11, 0.65));
+    }
+
+    /* FASE 3: KARTU PENGESAHAN KETUA TERPILIH */
+    .ceremony-card {
+      position: relative;
+      z-index: 4;
+      max-width: 820px;
+      width: 100%;
+      background: linear-gradient(165deg, rgba(36, 14, 20, 0.92) 0%, rgba(14, 10, 12, 0.95) 100%);
+      border: 2px solid rgba(251, 191, 36, 0.8);
+      border-radius: 30px;
+      padding: 2.25rem 2rem;
+      text-align: center;
+      box-shadow:
+        0 0 0 1px rgba(253, 230, 138, 0.35),
+        0 0 95px rgba(217, 119, 6, 0.5),
+        0 35px 80px rgba(0, 0, 0, 0.85);
+      animation: grandCardSlam 750ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .ceremony-card.hidden {
+      display: none !important;
+    }
+
+    .ceremony-crest {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.65rem;
+      animation: slideDownFade 550ms ease 120ms both;
+    }
+
+    .ceremony-crest img {
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      background: #FFFFFF;
+      padding: 2px;
+    }
+
+    .ceremony-decree-label {
+      font-size: 0.8rem;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: #FCD34D;
+    }
+
+    .ceremony-main-heading {
+      font-family: var(--font-heading);
+      font-size: clamp(1.3rem, 2.8vw, 1.9rem);
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #FFFFFF;
+      margin-bottom: 1.25rem;
+      animation: slideDownFade 550ms ease 180ms both;
+    }
+
+    .ceremony-number-hero {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.85rem;
+      background: linear-gradient(135deg, #FDE68A 0%, #F59E0B 35%, #B45309 100%);
+      color: #18181B;
+      padding: 0.55rem 1.75rem;
+      border-radius: 999px;
+      border: 2px solid #FFFBEB;
+      box-shadow:
+        0 10px 30px rgba(245, 158, 11, 0.6),
+        inset 0 2px 4px rgba(255, 255, 255, 0.75);
+      margin-bottom: 1.35rem;
+      position: relative;
+      overflow: hidden;
+      animation: badgePopIn 650ms cubic-bezier(0.22, 1, 0.36, 1) 240ms both;
+    }
+
+    .ceremony-number-hero::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -120%;
+      width: 65%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.85), transparent);
+      transform: skewX(-24deg);
+      animation: goldSweep 2.2s ease-in-out 600ms infinite;
+    }
+
+    .ceremony-number-caption {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #451A03;
+    }
+
+    .ceremony-number-digits {
+      font-family: var(--font-heading);
+      font-size: clamp(2rem, 4.2vw, 2.85rem);
+      font-weight: 900;
+      line-height: 1;
+      color: #18181B;
+    }
+
+    .ceremony-halo-stage {
+      position: relative;
+      width: 196px;
+      height: 196px;
+      margin: 0 auto 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: portraitRise 700ms cubic-bezier(0.16, 1, 0.3, 1) 320ms both;
+    }
+
+    .halo-ring-outer {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 3px dashed #FBBF24;
+      box-shadow: 0 0 30px rgba(245, 158, 11, 0.5);
+      animation: spinClockwise 16s linear infinite;
+    }
+
+    .halo-ring-inner {
+      position: absolute;
+      inset: 10px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      border-top-color: #FDE68A;
+      border-bottom-color: #C81E1E;
+      animation: spinCounterClockwise 9s linear infinite;
+    }
+
+    .ceremony-photo-wrap {
+      width: 162px;
+      height: 162px;
+      border-radius: 50%;
+      padding: 5px;
+      background: linear-gradient(135deg, #FEF08A, #D97706, #F59E0B);
+      box-shadow: 0 0 40px rgba(245, 158, 11, 0.65);
+      position: relative;
+      z-index: 2;
+    }
+
+    .ceremony-photo-img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #27272A;
+    }
+
+    .ceremony-photo-initials {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #881337 0%, #4C0519 100%);
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-heading);
+      font-size: 3.1rem;
+      font-weight: 800;
+    }
+
+    .ceremony-winner-name {
+      font-family: var(--font-heading);
+      font-size: clamp(1.85rem, 4.2vw, 3rem);
+      font-weight: 900;
+      line-height: 1.15;
+      margin-bottom: 0.8rem;
+      background: linear-gradient(180deg, #FFFFFF 20%, #FDE68A 85%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.65));
+      animation: slideUpFade 650ms ease 400ms both;
+    }
+
+    .ceremony-stats-pill {
+      display: inline-flex;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.5rem;
+      background: rgba(245, 158, 11, 0.16);
+      border: 1px solid rgba(251, 191, 36, 0.6);
+      border-radius: 999px;
+      padding: 0.55rem 1.4rem;
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #FEF08A;
+      margin-bottom: 1.25rem;
+      animation: slideUpFade 650ms ease 480ms both;
+    }
+
+    .ceremony-motto {
+      font-size: 0.88rem;
+      color: #E4E4E7;
+      max-width: 580px;
+      margin: 0 auto;
+      line-height: 1.55;
+      animation: slideUpFade 650ms ease 560ms both;
+    }
+
+    .ceremony-toolbar {
+      position: fixed;
+      bottom: 1.25rem;
+      right: 1.25rem;
+      z-index: 110;
+      display: flex;
+      gap: 0.5rem;
+      opacity: 0.78;
+      transition: opacity 180ms ease;
+    }
+
+    .ceremony-toolbar:hover {
+      opacity: 1;
+    }
+
+    @keyframes fadeOverlayIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes stageImpactShake {
+      0%, 100% { transform: translate3d(0, 0, 0); }
+      12% { transform: translate3d(-12px, 9px, 0); }
+      25% { transform: translate3d(11px, -8px, 0); }
+      38% { transform: translate3d(-9px, -6px, 0); }
+      52% { transform: translate3d(8px, 6px, 0); }
+      68% { transform: translate3d(-5px, 4px, 0); }
+      84% { transform: translate3d(4px, -2px, 0); }
+    }
+
+    @keyframes flashExplosion {
+      0% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    @keyframes shockwaveExpand {
+      0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(0.35);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(9.5);
+      }
+    }
+
+    @keyframes grandCardSlam {
+      0% { opacity: 0; transform: scale(1.24); }
+      60% { opacity: 1; transform: scale(0.98); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes badgePopIn {
+      0% { opacity: 0; transform: scale(0.4); }
+      70% { opacity: 1; transform: scale(1.08); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes portraitRise {
+      0% { opacity: 0; transform: translateY(28px) scale(0.8); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @keyframes slideDownFade {
+      from { opacity: 0; transform: translateY(-16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideUpFade {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulseGlowText {
+      from { opacity: 0.65; transform: scale(0.98); }
+      to { opacity: 1; transform: scale(1.02); }
+    }
+
+    @keyframes goldSweep {
+      0% { left: -120%; }
+      45%, 100% { left: 160%; }
+    }
+
+    @keyframes spinClockwise {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes spinCounterClockwise {
+      from { transform: rotate(360deg); }
+      to { transform: rotate(0deg); }
+    }
+  </style>
+</head>
+<body>
+  <header class="projector-topbar">
+    <div class="projector-brand">
+      <img src="../assets/logo-pasmantab.png" onerror="this.src='../assets/logo-pasmantab.svg'" alt="Logo PASMANTAB" />
+      <div>
+        <div id="proj-main-title" style="font-family:var(--font-heading); font-weight:800; font-size:1rem; letter-spacing:0.01em;">
+          LIVE COUNT — PEMILIHAN KETUA PASMANTAB
+        </div>
+        <div id="proj-subtitle" style="font-size:0.75rem; color:#A1A1AA;">
+          PASKIBRA MAN 4 BANJAR • MODE PEMBACAAN SURAT SUARA VIRTUAL
+        </div>
+      </div>
+    </div>
+
+    <div class="projector-controls">
+      <select id="select-reveal-speed" class="speed-select" aria-label="Kecepatan Pembacaan">
+        <option value="1200">Kecepatan: Lambat (1,2 dtk)</option>
+        <option value="600" selected>Kecepatan: Normal (0,6 dtk)</option>
+        <option value="250">Kecepatan: Cepat (0,25 dtk)</option>
+      </select>
+
+      <button type="button" id="btn-toggle-sound" class="btn-glass" title="Suara Efek">
+        Suara: Aktif
+      </button>
+
+      <button type="button" id="btn-fullscreen" class="btn-glass">
+        Layar Penuh
+      </button>
+
+      <a href="./dashboard.html" class="btn-glass">
+        Kembali ke Dashboard
+      </a>
+    </div>
+  </header>
+
+  <main class="projector-container">
+    <div id="proj-alert" class="alert hidden" role="alert"></div>
+
+    <section class="ballot-stage">
+      <div>
+        <div id="virtual-ballot-box" class="virtual-ballot-card">
+          <div id="ballot-meta" class="ballot-meta-tag">KOTAK SUARA TERSEGEL &bull; SIAP DIBACAKAN</div>
+          <div id="ballot-headline" class="ballot-choice-headline">
+            Tekan tombol "Mulai Pembacaan Suara" untuk memulai
+          </div>
+        </div>
+
+        <div style="display:flex; flex-wrap:wrap; gap:0.65rem; margin-top:1rem;">
+          <button type="button" id="btn-start-reveal" class="btn btn-primary" disabled>
+            MULAI PEMBACAAN SUARA
+          </button>
+          <button type="button" id="btn-pause-reveal" class="btn-glass hidden">
+            Jeda (Pause)
+          </button>
+          <button type="button" id="btn-reset-reveal" class="btn-glass hidden">
+            Ulangi dari 0
+          </button>
+          <button type="button" id="btn-skip-reveal" class="btn-glass hidden">
+            Tampilkan Hasil Akhir
+          </button>
+          <button type="button" id="btn-show-ceremony" class="btn-gold-glass hidden">
+            &#9733; Tampilkan Layar Pengesahan
+          </button>
+        </div>
+      </div>
+
+      <div class="stage-counter-box">
+        <div class="stage-counter-num">
+          <span id="revealed-count">0</span> / <span id="total-ballots-count">0</span>
+        </div>
+        <div class="stage-counter-label">Surat Suara Terbaca</div>
+        <div id="participation-pill" style="margin-top:0.5rem; font-size:0.78rem; color:#A7F3D0; font-weight:600;">
+          Memuat data kotak suara...
+        </div>
+      </div>
+    </section>
+
+    <section id="projector-candidates-grid" class="projector-grid"></section>
+  </main>
+
+  <!-- PANGGUNG PENGESAHAN KETUA TERPILIH (3-FASE SINEMATIK) -->
+  <div id="winner-ceremony-overlay" class="ceremony-overlay hidden" role="dialog" aria-modal="true">
+    <div id="ceremony-flash" class="ceremony-flash"></div>
+    <div id="shockwave-1" class="shockwave-ring"></div>
+    <div id="shockwave-2" class="shockwave-ring wave-2"></div>
+    <div id="shockwave-3" class="shockwave-ring wave-3"></div>
+    <div class="ceremony-sunburst"></div>
+    <canvas id="fx-canvas"></canvas>
+
+    <!-- Fase 1: Roulette Nomor Urut -->
+    <div id="suspense-stage" class="suspense-stage hidden">
+      <div id="suspense-kicker" class="suspense-kicker">DAN KETUA TERPILIH ADALAH...</div>
+      <div class="roulette-ring">
+        <div id="roulette-digits" class="roulette-digits">01</div>
+      </div>
+    </div>
+
+    <!-- Fase 3: Kartu Pengesahan Ketua Terpilih -->
+    <div id="ceremony-card" class="ceremony-card hidden">
+      <div class="ceremony-crest">
+        <img src="../assets/logo-pasmantab.png" onerror="this.src='../assets/logo-pasmantab.svg'" alt="Logo PASMANTAB" />
+        <div style="text-align:left;">
+          <div id="ceremony-org-header" class="ceremony-decree-label">PASKIBRA MAN 4 BANJAR</div>
+          <div style="font-size:0.74rem; color:#E4E4E7; letter-spacing:0.08em;">KETETAPAN MUSYAWARAH BESAR</div>
+        </div>
+      </div>
+
+      <h2 id="ceremony-title-heading" class="ceremony-main-heading">
+        KETUA TERPILIH PERIODE 2027
+      </h2>
+
+      <div class="ceremony-number-hero">
+        <span class="ceremony-number-caption">NOMOR URUT</span>
+        <span id="ceremony-number-digits" class="ceremony-number-digits">01</span>
+      </div>
+
+      <div class="ceremony-halo-stage">
+        <div class="halo-ring-outer"></div>
+        <div class="halo-ring-inner"></div>
+        <div id="ceremony-photo-slot" class="ceremony-photo-wrap"></div>
+      </div>
+
+      <div id="ceremony-winner-name" class="ceremony-winner-name">
+        Nama Ketua Terpilih
+      </div>
+
+      <div id="ceremony-vote-stats" class="ceremony-stats-pill">
+        0 Suara Sah (0.0%)
+      </div>
+
+      <p class="ceremony-motto">
+        Selamat mengemban amanah kepemimpinan. Semoga membawa Paskibra MAN 4 Banjar semakin disiplin, solid, dan berprestasi.
+      </p>
+    </div>
+
+    <div class="ceremony-toolbar">
+      <button type="button" id="btn-replay-confetti" class="btn-glass">
+        Ulangi Pengesahan
+      </button>
+      <button type="button" id="btn-close-ceremony" class="btn-glass">
+        Lihat Rincian Grafik
+      </button>
+    </div>
+  </div>
+
+  <script src="../js/config.js?v=7"></script>
+  <script src="../js/supabase-client.js?v=7"></script>
+  <script src="../js/utils.js?v=7"></script>
+  <script>
+    (function () {
+      const Utils = window.PasmantabUtils;
+      const SbService = window.SupabaseService;
+
+      let candidates = [];
+      let ballotDeck = [];
+      let currentCounts = {};
+      let currentIndex = 0;
+      let isRunning = false;
+      let isPaused = false;
+      let soundEnabled = true;
+      let revealTimer = null;
+      let ceremonyDelayTimer = null;
+      let suspenseTimers = [];
+      let audioCtx = null;
+      let fxAnimId = null;
+
+      let orgNameLabel = "PASKIBRA MAN 4 BANJAR";
+      let periodLabel = "2027";
+      let lastCrownedWinner = null;
+      let lastCrownedVotes = 0;
+
+      const startBtn = document.getElementById("btn-start-reveal");
+      const pauseBtn = document.getElementById("btn-pause-reveal");
+      const resetBtn = document.getElementById("btn-reset-reveal");
+      const skipBtn = document.getElementById("btn-skip-reveal");
+      const showCeremonyBtn = document.getElementById("btn-show-ceremony");
+      const speedSelect = document.getElementById("select-reveal-speed");
+      const soundBtn = document.getElementById("btn-toggle-sound");
+      const fullscreenBtn = document.getElementById("btn-fullscreen");
+
+      const ballotBox = document.getElementById("virtual-ballot-box");
+      const ballotMeta = document.getElementById("ballot-meta");
+      const ballotHeadline = document.getElementById("ballot-headline");
+      const revealedCountEl = document.getElementById("revealed-count");
+      const totalBallotsEl = document.getElementById("total-ballots-count");
+      const participationPill = document.getElementById("participation-pill");
+      const gridEl = document.getElementById("projector-candidates-grid");
+
+      const ceremonyOverlay = document.getElementById("winner-ceremony-overlay");
+      const ceremonyFlash = document.getElementById("ceremony-flash");
+      const shockwave1 = document.getElementById("shockwave-1");
+      const shockwave2 = document.getElementById("shockwave-2");
+      const shockwave3 = document.getElementById("shockwave-3");
+      const suspenseStage = document.getElementById("suspense-stage");
+      const suspenseKicker = document.getElementById("suspense-kicker");
+      const rouletteDigits = document.getElementById("roulette-digits");
+      const ceremonyCard = document.getElementById("ceremony-card");
+      const fxCanvas = document.getElementById("fx-canvas");
+      const closeCeremonyBtn = document.getElementById("btn-close-ceremony");
+      const replayConfettiBtn = document.getElementById("btn-replay-confetti");
+
+      // ======================================================================
+      // 1. PEMBUKA KUNCI AUDIO & SYNTHESIZER
+      // ======================================================================
+      function unlockAudio() {
+        try {
+          if (!audioCtx) {
+            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+            audioCtx = new AudioContextClass();
+          }
+          if (audioCtx.state === "suspended") {
+            audioCtx.resume();
+          }
+          // Mainkan pulsa hening 1 sample agar izin audio browser terbuka penuh
+          const buffer = audioCtx.createBuffer(1, 1, 22050);
+          const source = audioCtx.createBufferSource();
+          source.buffer = buffer;
+          source.connect(audioCtx.destination);
+          source.start(0);
+        } catch (_) {}
+      }
+
+      function playTone(freq, duration, type = "sine", volume = 0.14) {
+        if (!soundEnabled) return;
+        try {
+          if (!audioCtx) {
+            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+            audioCtx = new AudioContextClass();
+          }
+          if (audioCtx.state === "suspended") {
+            audioCtx.resume();
+          }
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+          gain.gain.setValueAtTime(volume, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start();
+          osc.stop(audioCtx.currentTime + duration);
+        } catch (_) {}
+      }
+
+      function playBallotChime() {
+        playTone(660, 0.14, "triangle", 0.11);
+      }
+
+      function playRouletteTick(stepIndex) {
+        const pitch = 260 + Math.min(stepIndex * 22, 460);
+        playTone(pitch, 0.09, "sawtooth", 0.1);
+      }
+
+      function playGrandVictorySound() {
+        if (!soundEnabled) return;
+        try {
+          if (!audioCtx) {
+            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+            audioCtx = new AudioContextClass();
+          }
+          if (audioCtx.state === "suspended") {
+            audioCtx.resume();
+          }
+          // Dentuman Bass Timpani
+          const bassOsc = audioCtx.createOscillator();
+          const bassGain = audioCtx.createGain();
+          bassOsc.type = "sine";
+          bassOsc.frequency.setValueAtTime(150, audioCtx.currentTime);
+          bassOsc.frequency.exponentialRampToValueAtTime(36, audioCtx.currentTime + 0.9);
+          bassGain.gain.setValueAtTime(0.45, audioCtx.currentTime);
+          bassGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.95);
+          bassOsc.connect(bassGain);
+          bassGain.connect(audioCtx.destination);
+          bassOsc.start();
+          bassOsc.stop(audioCtx.currentTime + 0.98);
+        } catch (_) {}
+
+        // Fanfare Terompet Kemenangan
+        const brassNotes = [
+          { f: 523.25, t: 0, d: 0.24 },
+          { f: 659.25, t: 120, d: 0.24 },
+          { f: 783.99, t: 240, d: 0.28 },
+          { f: 1046.5, t: 380, d: 0.8 },
+          { f: 783.99, t: 620, d: 0.22 },
+          { f: 880.0, t: 760, d: 0.22 },
+          { f: 1046.5, t: 920, d: 1.35 }
+        ];
+        brassNotes.forEach((n) => {
+          setTimeout(() => {
+            playTone(n.f, n.d, "triangle", 0.18);
+            playTone(n.f * 0.5, n.d, "sawtooth", 0.07);
+          }, n.t);
+        });
+      }
+
+      // ======================================================================
+      // 2. MESIN KEMBANG API, KONFETI METALIK & BARA EMAS
+      // ======================================================================
+      function stopCanvasFx() {
+        if (fxAnimId) {
+          cancelAnimationFrame(fxAnimId);
+          fxAnimId = null;
+        }
+        if (fxCanvas) {
+          const ctx = fxCanvas.getContext("2d");
+          if (ctx) ctx.clearRect(0, 0, fxCanvas.width, fxCanvas.height);
+        }
+      }
+
+      function startGrandFx() {
+        stopCanvasFx();
+        if (!fxCanvas) return;
+        const ctx = fxCanvas.getContext("2d");
+        fxCanvas.width = window.innerWidth;
+        fxCanvas.height = window.innerHeight;
+
+        const goldPalette = ["#FDE68A", "#F59E0B", "#D97706", "#FFFFFF", "#EF4444", "#FBBF24"];
+
+        const confetti = Array.from({ length: 135 }, () => ({
+          x: Math.random() * fxCanvas.width,
+          y: Math.random() * -fxCanvas.height,
+          w: Math.random() * 11 + 6,
+          h: Math.random() * 6 + 4,
+          color: goldPalette[Math.floor(Math.random() * goldPalette.length)],
+          vx: (Math.random() - 0.5) * 2.8,
+          vy: Math.random() * 2.8 + 1.9,
+          rot: Math.random() * Math.PI * 2,
+          spin: (Math.random() - 0.5) * 0.16,
+          wobble: Math.random() * Math.PI * 2
+        }));
+
+        const embers = Array.from({ length: 50 }, () => ({
+          x: Math.random() * fxCanvas.width,
+          y: fxCanvas.height + Math.random() * 120,
+          r: Math.random() * 2.8 + 1.2,
+          vy: -(Math.random() * 1.8 + 0.8),
+          vx: (Math.random() - 0.5) * 0.9,
+          alpha: Math.random() * 0.75 + 0.25
+        }));
+
+        const rockets = [];
+        const sparks = [];
+        let tick = 0;
+
+        function launchRocket(presetX) {
+          rockets.push({
+            x: presetX !== undefined ? presetX : fxCanvas.width * (0.12 + Math.random() * 0.76),
+            y: fxCanvas.height + 10,
+            targetY: fxCanvas.height * (0.12 + Math.random() * 0.34),
+            vy: -(Math.random() * 4.5 + 10),
+            color: goldPalette[Math.floor(Math.random() * goldPalette.length)]
+          });
+        }
+
+        function explodeRocket(r) {
+          const count = 64;
+          for (let i = 0; i < count; i++) {
+            const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.1;
+            const speed = Math.random() * 6.2 + 2.2;
+            sparks.push({
+              x: r.x,
+              y: r.y,
+              vx: Math.cos(angle) * speed,
+              vy: Math.sin(angle) * speed,
+              alpha: 1,
+              decay: Math.random() * 0.015 + 0.012,
+              color: i % 3 === 0 ? "#FFFFFF" : r.color,
+              size: Math.random() * 3 + 1.6
+            });
+          }
+        }
+
+        // Luncurkan 5 roket serentak di kiri & kanan kartu
+        launchRocket(fxCanvas.width * 0.15);
+        launchRocket(fxCanvas.width * 0.28);
+        launchRocket(fxCanvas.width * 0.5);
+        launchRocket(fxCanvas.width * 0.72);
+        launchRocket(fxCanvas.width * 0.85);
+
+        function renderLoop() {
+          tick += 1;
+          ctx.clearRect(0, 0, fxCanvas.width, fxCanvas.height);
+
+          if (tick % 32 === 0 && rockets.length < 5) {
+            launchRocket();
+          }
+
+          for (let i = rockets.length - 1; i >= 0; i--) {
+            const r = rockets[i];
+            r.y += r.vy;
+            r.vy *= 0.97;
+
+            ctx.beginPath();
+            ctx.arc(r.x, r.y, 3.5, 0, Math.PI * 2);
+            ctx.fillStyle = "#FEF08A";
+            ctx.fill();
+
+            if (r.y <= r.targetY || r.vy > -1.8) {
+              explodeRocket(r);
+              rockets.splice(i, 1);
+            }
+          }
+
+          for (let i = sparks.length - 1; i >= 0; i--) {
+            const s = sparks[i];
+            s.x += s.vx;
+            s.y += s.vy;
+            s.vy += 0.085;
+            s.vx *= 0.97;
+            s.alpha -= s.decay;
+
+            if (s.alpha <= 0) {
+              sparks.splice(i, 1);
+              continue;
+            }
+
+            ctx.save();
+            ctx.globalAlpha = s.alpha;
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+            ctx.fillStyle = s.color;
+            ctx.fill();
+            ctx.restore();
+          }
+
+          embers.forEach((e) => {
+            e.x += e.vx;
+            e.y += e.vy;
+            if (e.y < -10) {
+              e.y = fxCanvas.height + 10;
+              e.x = Math.random() * fxCanvas.width;
+            }
+            ctx.save();
+            ctx.globalAlpha = e.alpha;
+            ctx.beginPath();
+            ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2);
+            ctx.fillStyle = "#FBBF24";
+            ctx.fill();
+            ctx.restore();
+          });
+
+          confetti.forEach((p) => {
+            p.wobble += 0.08;
+            p.x += p.vx + Math.sin(p.wobble) * 0.75;
+            p.y += p.vy;
+            p.rot += p.spin;
+            if (p.y > fxCanvas.height + 20) {
+              p.y = -15;
+              p.x = Math.random() * fxCanvas.width;
+            }
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate(p.rot);
+            ctx.scale(Math.cos(p.wobble), 1);
+            ctx.fillStyle = p.color;
+            ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+            ctx.restore();
+          });
+
+          fxAnimId = requestAnimationFrame(renderLoop);
+        }
+
+        renderLoop();
+      }
+
+      // ======================================================================
+      // 3. PENGACAKAN & TAMPILAN KARTU KANDIDAT
+      // ======================================================================
+      function shuffleArray(arr) {
+        const copy = arr.slice();
+        for (let i = copy.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [copy[i], copy[j]] = [copy[j], copy[i]];
+        }
+        return copy;
+      }
+
+      function getInitials(fullName) {
+        const parts = String(fullName || "K").trim().split(/\s+/);
+        if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+        return (parts[0][0] + parts[1][0]).toUpperCase();
+      }
+
+      function renderInitialCards() {
+        if (!candidates || candidates.length === 0) {
+          gridEl.innerHTML = `
+            <div style="grid-column:1/-1; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.18); border-radius:16px; padding:2rem; text-align:center;">
+              <h2 style="font-size:1.2rem; margin-bottom:0.5rem;">Belum Ada Calon Ketua Aktif</h2>
+              <p style="color:#D4D4D8; font-size:0.9rem;">
+                Tambahkan kandidat di menu <strong>2. Candidates</strong> pada Dashboard Panitia terlebih dahulu, lalu muat ulang halaman ini.
+              </p>
+            </div>
+          `;
+          return;
+        }
+
+        gridEl.innerHTML = candidates
+          .map((cand) => {
+            const num = String(cand.candidate_number).padStart(2, "0");
+            const initials = getInitials(cand.full_name);
+            const safeName = Utils.escapeHTML(cand.full_name);
+
+            const mediaHtml = cand.photo_url
+              ? `<img src="${Utils.escapeHTML(cand.photo_url)}" alt="${safeName}" class="proj-photo" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+                 <div class="proj-avatar" style="display:none;">${initials}</div>`
+              : `<div class="proj-avatar">${initials}</div>`;
+
+            return `
+              <article id="proj-card-${cand.id}" class="proj-card">
+                <div id="winner-slot-${cand.id}"></div>
+                <div class="proj-cand-top">
+                  ${mediaHtml}
+                  <div>
+                    <span class="proj-num-tag">NOMOR URUT ${num}</span>
+                    <h2 class="proj-cand-name">${safeName}</h2>
+                  </div>
+                </div>
+
+                <div class="proj-score-row">
+                  <div>
+                    <span id="proj-count-${cand.id}" class="proj-vote-count">0</span>
+                    <span class="proj-vote-unit">suara</span>
+                  </div>
+                  <div id="proj-pct-${cand.id}" class="proj-vote-pct">0.0%</div>
+                </div>
+
+                <div class="proj-bar-track">
+                  <div id="proj-bar-${cand.id}" class="proj-bar-fill" style="width:0%;"></div>
+                </div>
+              </article>
+            `;
+          })
+          .join("");
+      }
+
+      function updateScoreboardUI(highlightCandidateId = null) {
+        const total = Math.max(ballotDeck.length, 1);
+
+        candidates.forEach((cand) => {
+          const count = currentCounts[cand.id] || 0;
+          const pct = ballotDeck.length > 0 ? ((count / total) * 100).toFixed(1) : "0.0";
+
+          const countEl = document.getElementById(`proj-count-${cand.id}`);
+          const pctEl = document.getElementById(`proj-pct-${cand.id}`);
+          const barEl = document.getElementById(`proj-bar-${cand.id}`);
+          const cardEl = document.getElementById(`proj-card-${cand.id}`);
+
+          if (countEl) countEl.textContent = String(count);
+          if (pctEl) pctEl.textContent = `${pct}%`;
+          if (barEl) barEl.style.width = `${Math.min(Number(pct), 100)}%`;
+
+          if (cardEl) {
+            if (cand.id === highlightCandidateId) {
+              cardEl.classList.remove("flash-vote");
+              void cardEl.offsetWidth;
+              cardEl.classList.add("flash-vote");
+            } else {
+              cardEl.classList.remove("flash-vote");
+            }
+          }
+        });
+
+        revealedCountEl.textContent = String(currentIndex);
+      }
+
+      // ======================================================================
+      // 4. SEKUENS PENGESAHAN 3-FASE (ROULETTE -> SHOCKWAVE -> GRAND REVEAL)
+      // ======================================================================
+      function clearSuspenseTimers() {
+        suspenseTimers.forEach((t) => clearTimeout(t));
+        suspenseTimers = [];
+      }
+
+      function openWinnerCeremony(winner, votesCount) {
+        if (!winner || !ceremonyOverlay) return;
+        clearSuspenseTimers();
+        stopCanvasFx();
+
+        lastCrownedWinner = winner;
+        lastCrownedVotes = votesCount;
+
+        const total = Math.max(ballotDeck.length, 1);
+        const pct = ((votesCount / total) * 100).toFixed(1);
+        const numFormatted = String(winner.candidate_number).padStart(2, "0");
+        const initials = getInitials(winner.full_name);
+        const safeName = Utils.escapeHTML(winner.full_name);
+
+        document.getElementById("ceremony-org-header").textContent = orgNameLabel;
+        document.getElementById("ceremony-title-heading").textContent =
+          `KETUA TERPILIH PERIODE ${periodLabel}`;
+        document.getElementById("ceremony-number-digits").textContent = numFormatted;
+        document.getElementById("ceremony-winner-name").textContent = winner.full_name;
+        document.getElementById("ceremony-vote-stats").textContent =
+          `Perolehan Sah: ${votesCount} dari ${ballotDeck.length} Suara (${pct}%)`;
+
+        const photoSlot = document.getElementById("ceremony-photo-slot");
+        photoSlot.innerHTML = winner.photo_url
+          ? `<img src="${Utils.escapeHTML(winner.photo_url)}" alt="${safeName}" class="ceremony-photo-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+             <div class="ceremony-photo-initials" style="display:none;">${initials}</div>`
+          : `<div class="ceremony-photo-initials">${initials}</div>`;
+
+        ceremonyOverlay.classList.remove("hidden", "screen-shake");
+        ceremonyFlash.classList.remove("trigger");
+        shockwave1.classList.remove("fire");
+        shockwave2.classList.remove("fire");
+        shockwave3.classList.remove("fire");
+        ceremonyCard.classList.add("hidden");
+        suspenseStage.classList.remove("hidden");
+        suspenseKicker.textContent = "DAN KETUA TERPILIH ADALAH...";
+
+        const candidateNums = candidates.length > 0
+          ? candidates.map((c) => String(c.candidate_number).padStart(2, "0"))
+          : ["01", "02"];
+
+        const delays = [0, 80, 160, 250, 350, 460, 580, 720, 880, 1060, 1260, 1490, 1750, 2050];
+        delays.forEach((ms, idx) => {
+          const t = setTimeout(() => {
+            const displayNum = idx === delays.length - 1
+              ? numFormatted
+              : candidateNums[idx % candidateNums.length];
+            rouletteDigits.textContent = displayNum;
+            playRouletteTick(idx);
+          }, ms);
+          suspenseTimers.push(t);
+        });
+
+        const revealTimerFinal = setTimeout(() => {
+          suspenseStage.classList.add("hidden");
+
+          void ceremonyOverlay.offsetWidth;
+          ceremonyOverlay.classList.add("screen-shake");
+          ceremonyFlash.classList.add("trigger");
+          shockwave1.classList.add("fire");
+          shockwave2.classList.add("fire");
+          shockwave3.classList.add("fire");
+
+          ceremonyCard.classList.remove("hidden");
+          showCeremonyBtn.classList.remove("hidden");
+
+          playGrandVictorySound();
+          startGrandFx();
+        }, 2350);
+
+        suspenseTimers.push(revealTimerFinal);
+      }
+
+      function closeWinnerCeremony() {
+        clearSuspenseTimers();
+        if (ceremonyOverlay) ceremonyOverlay.classList.add("hidden");
+        stopCanvasFx();
+      }
+
+      function finishReveal() {
+        isRunning = false;
+        isPaused = false;
+        clearTimeout(revealTimer);
+
+        pauseBtn.classList.add("hidden");
+        skipBtn.classList.add("hidden");
+        resetBtn.classList.remove("hidden");
+
+        let maxVotes = -1;
+        candidates.forEach((c) => {
+          const v = currentCounts[c.id] || 0;
+          if (v > maxVotes) maxVotes = v;
+        });
+
+        const winners = candidates.filter((c) => (currentCounts[c.id] || 0) === maxVotes && maxVotes > 0);
+
+        candidates.forEach((c) => {
+          const cardEl = document.getElementById(`proj-card-${c.id}`);
+          const slotEl = document.getElementById(`winner-slot-${c.id}`);
+          if (!cardEl || !slotEl) return;
+
+          cardEl.classList.remove("flash-vote");
+          if (winners.some((w) => w.id === c.id)) {
+            cardEl.classList.add("winner-card");
+            slotEl.innerHTML = `<div class="winner-ribbon">&#9733; PERAIH SUARA TERBANYAK</div>`;
+          }
+        });
+
+        if (winners.length === 1) {
+          const w = winners[0];
+          const num = String(w.candidate_number).padStart(2, "0");
+          ballotMeta.textContent = "PENGHITUNGAN SUARA SELESAI • MEMBUKA LAYAR PENGESAHAN...";
+          ballotHeadline.textContent = `Suara Terbanyak: Nomor Urut ${num} — ${w.full_name} (${maxVotes} Suara)`;
+
+          ceremonyDelayTimer = setTimeout(() => {
+            openWinnerCeremony(w, maxVotes);
+          }, 950);
+        } else if (winners.length > 1) {
+          ballotMeta.textContent = "PENGHITUNGAN SUARA SELESAI • HASIL IMBANG";
+          ballotHeadline.textContent = `Terdapat perolehan suara imbang (${maxVotes} suara). Keputusan mengikuti tata tertib musyawarah.`;
+          playGrandVictorySound();
+        } else {
+          ballotMeta.textContent = "PENGHITUNGAN SUARA SELESAI";
+          ballotHeadline.textContent = "Belum ada surat suara yang masuk.";
+        }
+      }
+
+      function stepNextBallot() {
+        if (!isRunning || isPaused) return;
+
+        if (currentIndex >= ballotDeck.length) {
+          finishReveal();
+          return;
+        }
+
+        const ballot = ballotDeck[currentIndex];
+        currentIndex += 1;
+        currentCounts[ballot.id] = (currentCounts[ballot.id] || 0) + 1;
+
+        const numFormatted = String(ballot.candidate_number).padStart(2, "0");
+        ballotMeta.textContent = `SURAT SUARA KE-${currentIndex} DARI ${ballotDeck.length} • SAH`;
+        ballotHeadline.textContent = `NOMOR URUT ${numFormatted} — ${ballot.full_name}`;
+
+        ballotBox.classList.remove("pop");
+        void ballotBox.offsetWidth;
+        ballotBox.classList.add("pop");
+
+        updateScoreboardUI(ballot.id);
+        playBallotChime();
+
+        if (currentIndex >= ballotDeck.length) {
+          revealTimer = setTimeout(finishReveal, 600);
+        } else {
+          const delay = Number(speedSelect.value) || 600;
+          revealTimer = setTimeout(stepNextBallot, delay);
+        }
+      }
+
+      function resetAllToZero() {
+        isRunning = false;
+        isPaused = false;
+        clearTimeout(revealTimer);
+        clearTimeout(ceremonyDelayTimer);
+        closeWinnerCeremony();
+        lastCrownedWinner = null;
+
+        currentIndex = 0;
+        currentCounts = {};
+        candidates.forEach((c) => {
+          currentCounts[c.id] = 0;
+          const cardEl = document.getElementById(`proj-card-${c.id}`);
+          const slotEl = document.getElementById(`winner-slot-${c.id}`);
+          if (cardEl) cardEl.classList.remove("winner-card", "flash-vote");
+          if (slotEl) slotEl.innerHTML = "";
+        });
+
+        ballotDeck = shuffleArray(ballotDeck);
+        updateScoreboardUI(null);
+
+        if (ballotDeck.length === 0) {
+          ballotMeta.textContent = "KOTAK SUARA KOSONG (0 SUARA MASUK)";
+          ballotHeadline.textContent = "Belum ada suara masuk. Jalankan simulasi atau buka pemilihan terlebih dahulu.";
+        } else {
+          ballotMeta.textContent = "KOTAK SUARA TERSEGEL • SIAP DIBACAKAN";
+          ballotHeadline.textContent = 'Tekan tombol "Mulai Pembacaan Suara" untuk memulai';
+        }
+
+        startBtn.disabled = ballotDeck.length === 0;
+        startBtn.classList.remove("hidden");
+        pauseBtn.classList.add("hidden");
+        pauseBtn.textContent = "Jeda (Pause)";
+        resetBtn.classList.add("hidden");
+        skipBtn.classList.add("hidden");
+        showCeremonyBtn.classList.add("hidden");
+      }
+
+      startBtn.addEventListener("click", () => {
+        unlockAudio();
+        if (ballotDeck.length === 0) return;
+        isRunning = true;
+        isPaused = false;
+        startBtn.classList.add("hidden");
+        pauseBtn.classList.remove("hidden");
+        resetBtn.classList.remove("hidden");
+        skipBtn.classList.remove("hidden");
+        stepNextBallot();
+      });
+
+      pauseBtn.addEventListener("click", () => {
+        unlockAudio();
+        if (!isRunning) return;
+        isPaused = !isPaused;
+        if (isPaused) {
+          clearTimeout(revealTimer);
+          pauseBtn.textContent = "Lanjutkan";
+          ballotMeta.textContent = `DIJEDA PADA SURAT SUARA KE-${currentIndex} DARI ${ballotDeck.length}`;
+        } else {
+          pauseBtn.textContent = "Jeda (Pause)";
+          stepNextBallot();
+        }
+      });
+
+      resetBtn.addEventListener("click", () => {
+        unlockAudio();
+        resetAllToZero();
+      });
+
+      skipBtn.addEventListener("click", () => {
+        unlockAudio();
+        clearTimeout(revealTimer);
+        while (currentIndex < ballotDeck.length) {
+          const b = ballotDeck[currentIndex];
+          currentIndex += 1;
+          currentCounts[b.id] = (currentCounts[b.id] || 0) + 1;
+        }
+        updateScoreboardUI(null);
+        finishReveal();
+      });
+
+      if (showCeremonyBtn) {
+        showCeremonyBtn.addEventListener("click", () => {
+          unlockAudio();
+          if (lastCrownedWinner) {
+            openWinnerCeremony(lastCrownedWinner, lastCrownedVotes);
+          }
+        });
+      }
+
+      if (closeCeremonyBtn) {
+        closeCeremonyBtn.addEventListener("click", closeWinnerCeremony);
+      }
+
+      if (replayConfettiBtn) {
+        replayConfettiBtn.addEventListener("click", () => {
+          unlockAudio();
+          if (lastCrownedWinner) {
+            openWinnerCeremony(lastCrownedWinner, lastCrownedVotes);
+          }
+        });
+      }
+
+      soundBtn.addEventListener("click", () => {
+        unlockAudio();
+        soundEnabled = !soundEnabled;
+        soundBtn.textContent = soundEnabled ? "Suara: Aktif" : "Suara: Hening";
+        if (soundEnabled) playBallotChime();
+      });
+
+      fullscreenBtn.addEventListener("click", () => {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(() => {});
+          fullscreenBtn.textContent = "Keluar Layar Penuh";
+        } else {
+          document.exitFullscreen().catch(() => {});
+          fullscreenBtn.textContent = "Layar Penuh";
+        }
+      });
+
+      window.addEventListener("resize", () => {
+        if (fxCanvas && !ceremonyOverlay.classList.contains("hidden")) {
+          fxCanvas.width = window.innerWidth;
+          fxCanvas.height = window.innerHeight;
+        }
+      });
+
+      document.addEventListener("DOMContentLoaded", async () => {
+        try {
+          const supabase = SbService.getClient();
+          const { data: sessionData } = await supabase.auth.getSession();
+          if (!sessionData || !sessionData.session) {
+            window.location.replace("./login.html");
+            return;
+          }
+
+          const { data: adminProfile, error: adminErr } = await supabase
+            .from("admin_users")
+            .select("id, is_active")
+            .eq("id", sessionData.session.user.id)
+            .eq("is_active", true)
+            .single();
+
+          if (adminErr || !adminProfile) {
+            window.location.replace("./login.html");
+            return;
+          }
+
+          const { data: settings } = await supabase
+            .from("election_settings")
+            .select("*")
+            .eq("id", 1)
+            .single();
+
+          if (settings) {
+            if (settings.org_name) orgNameLabel = settings.org_name.toUpperCase();
+            if (settings.period_label) periodLabel = settings.period_label;
+
+            const mainTitleEl = document.getElementById("proj-main-title");
+            const subTitleEl = document.getElementById("proj-subtitle");
+            if (mainTitleEl) {
+              mainTitleEl.textContent = `LIVE COUNT — PEMILIHAN KETUA PERIODE ${periodLabel}`;
+            }
+            if (subTitleEl) {
+              subTitleEl.textContent = `${orgNameLabel} • PEMBACAAN SURAT SUARA VIRTUAL`;
+            }
+
+            if (settings.status === "OPEN") {
+              Utils.showAlert(
+                "proj-alert",
+                "warning",
+                "Perhatian: Status pemilihan masih OPEN. Tutup pemilihan (CLOSED) terlebih dahulu di menu Election Control agar tidak ada suara susulan saat pembacaan dimulai."
+              );
+            }
+          }
+
+          const { data: dbCandidates } = await supabase
+            .from("candidates")
+            .select("id, candidate_number, full_name, photo_url, is_active")
+            .eq("position", "CHAIRPERSON")
+            .eq("is_active", true)
+            .order("candidate_number", { ascending: true });
+
+          const photoMap = {};
+          (dbCandidates || []).forEach((item) => {
+            photoMap[item.id] = item.photo_url || null;
+          });
+
+          const { data: tally, error: tallyErr } = await supabase.rpc("get_election_tally");
+          if (tallyErr) throw tallyErr;
+
+          const tallyList = (tally && Array.isArray(tally.chairperson) && tally.chairperson.length > 0)
+            ? tally.chairperson
+            : (dbCandidates || []).map((c) => ({
+                id: c.id,
+                candidate_number: c.candidate_number,
+                full_name: c.full_name,
+                votes: 0
+              }));
+
+          candidates = tallyList.map((c) => ({
+            ...c,
+            photo_url: photoMap[c.id] || null
+          }));
+
+          ballotDeck = [];
+          candidates.forEach((cand) => {
+            const votes = Number(cand.votes) || 0;
+            for (let i = 0; i < votes; i++) {
+              ballotDeck.push({
+                id: cand.id,
+                candidate_number: cand.candidate_number,
+                full_name: cand.full_name
+              });
+            }
+          });
+
+          totalBallotsEl.textContent = String(ballotDeck.length);
+          participationPill.textContent = `Total Partisipasi: ${(tally && tally.total_voted) || ballotDeck.length} Anggota Hadir`;
+
+          renderInitialCards();
+          resetAllToZero();
+        } catch (err) {
+          Utils.showAlert("proj-alert", "error", SbService.mapFriendlyError(err));
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
