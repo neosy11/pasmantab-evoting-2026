@@ -1,5 +1,5 @@
 /**
- * PASMANTAB e-VOTING 2026 — Projector Virtual Ballot Reveal & Ceremony Controller
+ * PASMANTAB e-VOTING 2026 — Projector Virtual Ballot Reveal & Grand Ceremony FX
  */
 (function () {
   const Utils = window.PasmantabUtils;
@@ -14,8 +14,9 @@
   let soundEnabled = true;
   let revealTimer = null;
   let ceremonyDelayTimer = null;
+  let suspenseTimers = [];
   let audioCtx = null;
-  let confettiAnimId = null;
+  let fxAnimId = null;
 
   let orgNameLabel = "PASKIBRA MAN 4 BANJAR";
   let periodLabel = "2027";
@@ -40,15 +41,22 @@
   const gridEl = document.getElementById("projector-candidates-grid");
 
   const ceremonyOverlay = document.getElementById("winner-ceremony-overlay");
-  const confettiCanvas = document.getElementById("confetti-canvas");
+  const ceremonyFlash = document.getElementById("ceremony-flash");
+  const shockwave1 = document.getElementById("shockwave-1");
+  const shockwave2 = document.getElementById("shockwave-2");
+  const suspenseStage = document.getElementById("suspense-stage");
+  const suspenseKicker = document.getElementById("suspense-kicker");
+  const rouletteDigits = document.getElementById("roulette-digits");
+  const ceremonyCard = document.getElementById("ceremony-card");
+  const fxCanvas = document.getElementById("fx-canvas");
   const closeCeremonyBtn = document.getElementById("btn-close-ceremony");
   const replayConfettiBtn = document.getElementById("btn-replay-confetti");
 
   // ==========================================================================
-  // 1. AUDIO SYNTHESIZER (LONCENG SURAT SUARA & FANFARE PENGESAHAN)
+  // 1. WEB AUDIO SYNTHESIZER (LONCENG, DRUMROLL TEGANG, BASS BOOM & FANFARE)
   // ==========================================================================
-  function playTone(freq, duration, type = "sine", volume = 0.12) {
-    if (!soundEnabled) return;
+  function ensureAudio() {
+    if (!soundEnabled) return null;
     try {
       if (!audioCtx) {
         const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -57,16 +65,26 @@
       if (audioCtx.state === "suspended") {
         audioCtx.resume();
       }
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
+      return audioCtx;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function playTone(freq, duration, type = "sine", volume = 0.12) {
+    const ctx = ensureAudio();
+    if (!ctx) return;
+    try {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
       osc.type = type;
-      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-      gain.gain.setValueAtTime(volume, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+      osc.frequency.setValueAtTime(freq, ctx.currentTime);
+      gain.gain.setValueAtTime(volume, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
       osc.connect(gain);
-      gain.connect(audioCtx.destination);
+      gain.connect(ctx.destination);
       osc.start();
-      osc.stop(audioCtx.currentTime + duration);
+      osc.stop(ctx.currentTime + duration);
     } catch (_) {}
   }
 
@@ -74,75 +92,222 @@
     playTone(660, 0.14, "triangle", 0.1);
   }
 
-  function playWinnerFanfare() {
-    const notes = [
-      { f: 523.25, t: 0, d: 0.25 },
-      { f: 659.25, t: 130, d: 0.25 },
-      { f: 783.99, t: 260, d: 0.28 },
-      { f: 1046.5, t: 400, d: 0.65 },
-      { f: 783.99, t: 620, d: 0.22 },
-      { f: 1046.5, t: 780, d: 0.9 }
+  function playRouletteTick(stepIndex) {
+    const pitch = 240 + Math.min(stepIndex * 18, 420);
+    playTone(pitch, 0.08, "sawtooth", 0.08);
+  }
+
+  function playGrandVictorySound() {
+    const ctx = ensureAudio();
+    if (ctx) {
+      try {
+        // Dentuman Bass Timpani
+        const bassOsc = ctx.createOscillator();
+        const bassGain = ctx.createGain();
+        bassOsc.type = "sine";
+        bassOsc.frequency.setValueAtTime(140, ctx.currentTime);
+        bassOsc.frequency.exponentialRampToValueAtTime(38, ctx.currentTime + 0.85);
+        bassGain.gain.setValueAtTime(0.38, ctx.currentTime);
+        bassGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.9);
+        bassOsc.connect(bassGain);
+        bassGain.connect(ctx.destination);
+        bassOsc.start();
+        bassOsc.stop(ctx.currentTime + 0.92);
+      } catch (_) {}
+    }
+
+    // Fanfare Terompet Kemenangan
+    const brassNotes = [
+      { f: 523.25, t: 0, d: 0.22 },
+      { f: 659.25, t: 120, d: 0.22 },
+      { f: 783.99, t: 240, d: 0.26 },
+      { f: 1046.5, t: 380, d: 0.75 },
+      { f: 783.99, t: 620, d: 0.2 },
+      { f: 880.0, t: 760, d: 0.2 },
+      { f: 1046.5, t: 920, d: 1.25 }
     ];
-    notes.forEach((n) => {
-      setTimeout(() => playTone(n.f, n.d, "triangle", 0.16), n.t);
+    brassNotes.forEach((n) => {
+      setTimeout(() => {
+        playTone(n.f, n.d, "triangle", 0.16);
+        playTone(n.f * 0.5, n.d, "sawtooth", 0.06);
+      }, n.t);
     });
   }
 
   // ==========================================================================
-  // 2. ANIMASI KONFETI EMAS & MERAH MARUN
+  // 2. MESIN EFEK VISUAL (KEMBANG API, KONFETI METALIK & BARA EMAS)
   // ==========================================================================
-  function stopConfetti() {
-    if (confettiAnimId) {
-      cancelAnimationFrame(confettiAnimId);
-      confettiAnimId = null;
+  function stopCanvasFx() {
+    if (fxAnimId) {
+      cancelAnimationFrame(fxAnimId);
+      fxAnimId = null;
     }
-    if (confettiCanvas) {
-      const ctx = confettiCanvas.getContext("2d");
-      if (ctx) ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+    if (fxCanvas) {
+      const ctx = fxCanvas.getContext("2d");
+      if (ctx) ctx.clearRect(0, 0, fxCanvas.width, fxCanvas.height);
     }
   }
 
-  function startConfetti() {
-    stopConfetti();
-    if (!confettiCanvas) return;
-    const ctx = confettiCanvas.getContext("2d");
-    confettiCanvas.width = window.innerWidth;
-    confettiCanvas.height = window.innerHeight;
+  function startGrandFx() {
+    stopCanvasFx();
+    if (!fxCanvas) return;
+    const ctx = fxCanvas.getContext("2d");
+    fxCanvas.width = window.innerWidth;
+    fxCanvas.height = window.innerHeight;
 
-    const palette = ["#F59E0B", "#FDE68A", "#C81E1E", "#FFFFFF", "#D97706"];
-    const pieces = Array.from({ length: 130 }, () => ({
-      x: Math.random() * confettiCanvas.width,
-      y: Math.random() * confettiCanvas.height - confettiCanvas.height,
-      w: Math.random() * 10 + 6,
+    const goldPalette = ["#FDE68A", "#F59E0B", "#D97706", "#FFFFFF", "#EF4444"];
+
+    // 1. Pita Konfeti 3D
+    const confetti = Array.from({ length: 120 }, () => ({
+      x: Math.random() * fxCanvas.width,
+      y: Math.random() * -fxCanvas.height,
+      w: Math.random() * 11 + 6,
       h: Math.random() * 6 + 4,
-      color: palette[Math.floor(Math.random() * palette.length)],
-      vx: (Math.random() - 0.5) * 2.4,
-      vy: Math.random() * 3.2 + 2.1,
-      angle: Math.random() * Math.PI * 2,
-      spin: (Math.random() - 0.5) * 0.12
+      color: goldPalette[Math.floor(Math.random() * goldPalette.length)],
+      vx: (Math.random() - 0.5) * 2.6,
+      vy: Math.random() * 2.8 + 1.8,
+      rot: Math.random() * Math.PI * 2,
+      spin: (Math.random() - 0.5) * 0.15,
+      wobble: Math.random() * Math.PI * 2
     }));
 
-    function drawFrame() {
-      ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
-      pieces.forEach((p) => {
-        p.x += p.vx;
+    // 2. Partikel Bara Emas Naik dari Bawah
+    const embers = Array.from({ length: 45 }, () => ({
+      x: Math.random() * fxCanvas.width,
+      y: fxCanvas.height + Math.random() * 120,
+      r: Math.random() * 2.6 + 1,
+      vy: -(Math.random() * 1.6 + 0.7),
+      vx: (Math.random() - 0.5) * 0.8,
+      alpha: Math.random() * 0.7 + 0.3
+    }));
+
+    // 3. Kembang Api Otomatis
+    const rockets = [];
+    const sparks = [];
+    let tick = 0;
+
+    function launchRocket() {
+      rockets.push({
+        x: fxCanvas.width * (0.15 + Math.random() * 0.7),
+        y: fxCanvas.height + 10,
+        targetY: fxCanvas.height * (0.14 + Math.random() * 0.3),
+        vy: -(Math.random() * 5 + 9),
+        color: goldPalette[Math.floor(Math.random() * goldPalette.length)]
+      });
+    }
+
+    function explodeRocket(r) {
+      const count = 48;
+      for (let i = 0; i < count; i++) {
+        const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.12;
+        const speed = Math.random() * 5.2 + 1.8;
+        sparks.push({
+          x: r.x,
+          y: r.y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          alpha: 1,
+          decay: Math.random() * 0.018 + 0.014,
+          color: r.color,
+          size: Math.random() * 2.5 + 1.4
+        });
+      }
+    }
+
+    // Luncurkan 3 roket awal bersamaan
+    launchRocket();
+    launchRocket();
+    launchRocket();
+
+    function renderLoop() {
+      tick += 1;
+      ctx.clearRect(0, 0, fxCanvas.width, fxCanvas.height);
+
+      // Peluncuran roket berkala
+      if (tick % 48 === 0 && rockets.length < 4) {
+        launchRocket();
+      }
+
+      // Gambar & update roket
+      for (let i = rockets.length - 1; i >= 0; i--) {
+        const r = rockets[i];
+        r.y += r.vy;
+        r.vy *= 0.97;
+
+        ctx.beginPath();
+        ctx.arc(r.x, r.y, 3, 0, Math.PI * 2);
+        ctx.fillStyle = "#FEF08A";
+        ctx.fill();
+
+        if (r.y <= r.targetY || r.vy > -1.8) {
+          explodeRocket(r);
+          rockets.splice(i, 1);
+        }
+      }
+
+      // Gambar & update percikan kembang api
+      for (let i = sparks.length - 1; i >= 0; i--) {
+        const s = sparks[i];
+        s.x += s.vx;
+        s.y += s.vy;
+        s.vy += 0.08; // gravitasi
+        s.vx *= 0.97;
+        s.alpha -= s.decay;
+
+        if (s.alpha <= 0) {
+          sparks.splice(i, 1);
+          continue;
+        }
+
+        ctx.save();
+        ctx.globalAlpha = s.alpha;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+        ctx.fillStyle = s.color;
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // Gambar bara emas naik
+      embers.forEach((e) => {
+        e.x += e.vx;
+        e.y += e.vy;
+        if (e.y < -10) {
+          e.y = fxCanvas.height + 10;
+          e.x = Math.random() * fxCanvas.width;
+        }
+        ctx.save();
+        ctx.globalAlpha = e.alpha;
+        ctx.beginPath();
+        ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2);
+        ctx.fillStyle = "#FBBF24";
+        ctx.fill();
+        ctx.restore();
+      });
+
+      // Gambar konfeti metalik
+      confetti.forEach((p) => {
+        p.wobble += 0.08;
+        p.x += p.vx + Math.sin(p.wobble) * 0.7;
         p.y += p.vy;
-        p.angle += p.spin;
-        if (p.y > confettiCanvas.height + 20) {
+        p.rot += p.spin;
+        if (p.y > fxCanvas.height + 20) {
           p.y = -15;
-          p.x = Math.random() * confettiCanvas.width;
+          p.x = Math.random() * fxCanvas.width;
         }
         ctx.save();
         ctx.translate(p.x, p.y);
-        ctx.rotate(p.angle);
+        ctx.rotate(p.rot);
+        ctx.scale(Math.cos(p.wobble), 1);
         ctx.fillStyle = p.color;
         ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
         ctx.restore();
       });
-      confettiAnimId = requestAnimationFrame(drawFrame);
+
+      fxAnimId = requestAnimationFrame(renderLoop);
     }
 
-    drawFrame();
+    renderLoop();
   }
 
   // ==========================================================================
@@ -164,6 +329,18 @@
   }
 
   function renderInitialCards() {
+    if (!candidates || candidates.length === 0) {
+      gridEl.innerHTML = `
+        <div style="grid-column:1/-1; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.18); border-radius:16px; padding:2rem; text-align:center;">
+          <h2 style="font-size:1.2rem; margin-bottom:0.5rem;">Belum Ada Calon Ketua Aktif</h2>
+          <p style="color:#D4D4D8; font-size:0.9rem;">
+            Tambahkan kandidat di menu <strong>2. Candidates</strong> pada Dashboard Panitia terlebih dahulu, lalu muat ulang halaman ini.
+          </p>
+        </div>
+      `;
+      return;
+    }
+
     gridEl.innerHTML = candidates
       .map((cand) => {
         const num = String(cand.candidate_number).padStart(2, "0");
@@ -234,10 +411,18 @@
   }
 
   // ==========================================================================
-  // 4. LAYAR PENGESAHAN KETUA TERPILIH
+  // 4. SEKUENS PENGESAHAN 3-FASE (ROULETTE -> IMPACT -> GRAND REVEAL)
   // ==========================================================================
+  function clearSuspenseTimers() {
+    suspenseTimers.forEach((t) => clearTimeout(t));
+    suspenseTimers = [];
+  }
+
   function openWinnerCeremony(winner, votesCount) {
     if (!winner || !ceremonyOverlay) return;
+    clearSuspenseTimers();
+    stopCanvasFx();
+
     lastCrownedWinner = winner;
     lastCrownedVotes = votesCount;
 
@@ -247,6 +432,7 @@
     const initials = getInitials(winner.full_name);
     const safeName = Utils.escapeHTML(winner.full_name);
 
+    // Siapkan isi kartu pengesahan terlebih dahulu
     document.getElementById("ceremony-org-header").textContent = orgNameLabel;
     document.getElementById("ceremony-title-heading").textContent =
       `KETUA TERPILIH PERIODE ${periodLabel}`;
@@ -261,15 +447,57 @@
          <div class="ceremony-photo-initials" style="display:none;">${initials}</div>`
       : `<div class="ceremony-photo-initials">${initials}</div>`;
 
-    ceremonyOverlay.classList.remove("hidden");
-    showCeremonyBtn.classList.remove("hidden");
-    playWinnerFanfare();
-    startConfetti();
+    // Reset state visual ke Fase 1 (Roulette Ketegangan)
+    ceremonyOverlay.classList.remove("hidden", "screen-shake");
+    ceremonyFlash.classList.remove("trigger");
+    shockwave1.classList.remove("fire");
+    shockwave2.classList.remove("fire");
+    ceremonyCard.classList.add("hidden");
+    suspenseStage.classList.remove("hidden");
+    suspenseKicker.textContent = "DAN KETUA TERPILIH ADALAH...";
+
+    const candidateNums = candidates.length > 0
+      ? candidates.map((c) => String(c.candidate_number).padStart(2, "0"))
+      : ["01", "02"];
+
+    // Jadwal putaran roulette nomor urut yang makin melambat
+    const delays = [0, 80, 160, 250, 350, 460, 580, 720, 880, 1060, 1260, 1490, 1750, 2050];
+    delays.forEach((ms, idx) => {
+      const t = setTimeout(() => {
+        const displayNum = idx === delays.length - 1
+          ? numFormatted
+          : candidateNums[idx % candidateNums.length];
+        rouletteDigits.textContent = displayNum;
+        playRouletteTick(idx);
+      }, ms);
+      suspenseTimers.push(t);
+    });
+
+    // Fase 2 & 3: Ledakan Cahaya + Screen Shake + Munculkan Kartu Pengesahan
+    const revealTimerFinal = setTimeout(() => {
+      suspenseStage.classList.add("hidden");
+
+      // Picu kilatan, shockwave, dan screen shake
+      void ceremonyOverlay.offsetWidth;
+      ceremonyOverlay.classList.add("screen-shake");
+      ceremonyFlash.classList.add("trigger");
+      shockwave1.classList.add("fire");
+      shockwave2.classList.add("fire");
+
+      ceremonyCard.classList.remove("hidden");
+      showCeremonyBtn.classList.remove("hidden");
+
+      playGrandVictorySound();
+      startGrandFx();
+    }, 2400);
+
+    suspenseTimers.push(revealTimerFinal);
   }
 
   function closeWinnerCeremony() {
+    clearSuspenseTimers();
     if (ceremonyOverlay) ceremonyOverlay.classList.add("hidden");
-    stopConfetti();
+    stopCanvasFx();
   }
 
   function finishReveal() {
@@ -304,17 +532,16 @@
     if (winners.length === 1) {
       const w = winners[0];
       const num = String(w.candidate_number).padStart(2, "0");
-      ballotMeta.textContent = "PENGHITUNGAN SUARA SELESAI • MENGESAHKAN KETUA TERPILIH...";
+      ballotMeta.textContent = "PENGHITUNGAN SUARA SELESAI • MEMBUKA LAYAR PENGESAHAN...";
       ballotHeadline.textContent = `Suara Terbanyak: Nomor Urut ${num} — ${w.full_name} (${maxVotes} Suara)`;
 
-      // Jeda 1,4 detik agar papan grafik terlihat lalu langsung buka animasi pengesahan
       ceremonyDelayTimer = setTimeout(() => {
         openWinnerCeremony(w, maxVotes);
-      }, 1400);
+      }, 1100);
     } else if (winners.length > 1) {
       ballotMeta.textContent = "PENGHITUNGAN SUARA SELESAI • HASIL IMBANG";
       ballotHeadline.textContent = `Terdapat perolehan suara imbang (${maxVotes} suara). Keputusan mengikuti tata tertib musyawarah.`;
-      playWinnerFanfare();
+      playGrandVictorySound();
     } else {
       ballotMeta.textContent = "PENGHITUNGAN SUARA SELESAI";
       ballotHeadline.textContent = "Belum ada surat suara yang masuk.";
@@ -373,8 +600,13 @@
     ballotDeck = shuffleArray(ballotDeck);
     updateScoreboardUI(null);
 
-    ballotMeta.textContent = "KOTAK SUARA TERSEGEL • SIAP DIBACAKAN";
-    ballotHeadline.textContent = 'Tekan tombol "Mulai Pembacaan Suara" untuk memulai';
+    if (ballotDeck.length === 0) {
+      ballotMeta.textContent = "KOTAK SUARA KOSONG (0 SUARA MASUK)";
+      ballotHeadline.textContent = "Belum ada suara masuk. Jalankan simulasi atau buka pemilihan terlebih dahulu.";
+    } else {
+      ballotMeta.textContent = "KOTAK SUARA TERSEGEL • SIAP DIBACAKAN";
+      ballotHeadline.textContent = 'Tekan tombol "Mulai Pembacaan Suara" untuk memulai';
+    }
 
     startBtn.disabled = ballotDeck.length === 0;
     startBtn.classList.remove("hidden");
@@ -385,9 +617,6 @@
     showCeremonyBtn.classList.add("hidden");
   }
 
-  // ==========================================================================
-  // 5. EVENT LISTENERS KONTROL OPERATOR
-  // ==========================================================================
   startBtn.addEventListener("click", () => {
     if (ballotDeck.length === 0) return;
     isRunning = true;
@@ -464,15 +693,12 @@
   });
 
   window.addEventListener("resize", () => {
-    if (confettiCanvas && !ceremonyOverlay.classList.contains("hidden")) {
-      confettiCanvas.width = window.innerWidth;
-      confettiCanvas.height = window.innerHeight;
+    if (fxCanvas && !ceremonyOverlay.classList.contains("hidden")) {
+      fxCanvas.width = window.innerWidth;
+      fxCanvas.height = window.innerHeight;
     }
   });
 
-  // ==========================================================================
-  // 6. INISIALISASI & VALIDASI HAK AKSES PANITIA
-  // ==========================================================================
   document.addEventListener("DOMContentLoaded", async () => {
     try {
       const supabase = SbService.getClient();
@@ -522,21 +748,31 @@
         }
       }
 
-      // Ambil juga foto kandidat agar tampil di kartu & layar pengesahan
-      const { data: candPhotos } = await supabase
+      const { data: dbCandidates } = await supabase
         .from("candidates")
-        .select("id, photo_url")
-        .eq("position", "CHAIRPERSON");
+        .select("id, candidate_number, full_name, photo_url, is_active")
+        .eq("position", "CHAIRPERSON")
+        .eq("is_active", true)
+        .order("candidate_number", { ascending: true });
 
       const photoMap = {};
-      (candPhotos || []).forEach((item) => {
+      (dbCandidates || []).forEach((item) => {
         photoMap[item.id] = item.photo_url || null;
       });
 
       const { data: tally, error: tallyErr } = await supabase.rpc("get_election_tally");
       if (tallyErr) throw tallyErr;
 
-      candidates = (tally.chairperson || []).map((c) => ({
+      const tallyList = (tally && Array.isArray(tally.chairperson) && tally.chairperson.length > 0)
+        ? tally.chairperson
+        : (dbCandidates || []).map((c) => ({
+            id: c.id,
+            candidate_number: c.candidate_number,
+            full_name: c.full_name,
+            votes: 0
+          }));
+
+      candidates = tallyList.map((c) => ({
         ...c,
         photo_url: photoMap[c.id] || null
       }));
@@ -554,7 +790,7 @@
       });
 
       totalBallotsEl.textContent = String(ballotDeck.length);
-      participationPill.textContent = `Total Partisipasi: ${tally.total_voted} Anggota Hadir`;
+      participationPill.textContent = `Total Partisipasi: ${(tally && tally.total_voted) || ballotDeck.length} Anggota Hadir`;
 
       renderInitialCards();
       resetAllToZero();
