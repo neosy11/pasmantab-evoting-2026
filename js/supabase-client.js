@@ -1,5 +1,5 @@
 /**
- * PASMANTAB e-VOTING 2026 — Supabase Client & RPC Bridge
+ * PASMANTAB e-VOTING 2026 — Supabase Client & Universal RPC Bridge
  */
 (function () {
   let supabaseInstance = null;
@@ -90,10 +90,14 @@
   function normalizeVoterArgs(arg1, className, rawToken, deviceId) {
     if (arg1 && typeof arg1 === "object") {
       return {
-        p_full_name: arg1.p_full_name || arg1.fullName || arg1.full_name || "",
-        p_class_name: arg1.p_class_name || arg1.className || arg1.class_name || "",
-        p_raw_token: arg1.p_raw_token || arg1.rawToken || arg1.raw_token || "",
-        p_device_id: arg1.p_device_id || arg1.deviceId || arg1.device_id || null
+        p_full_name:
+          arg1.p_full_name || arg1.fullName || arg1.full_name || arg1.voterName || arg1.name || "",
+        p_class_name:
+          arg1.p_class_name || arg1.className || arg1.class_name || arg1.voterClass || arg1.kelas || "",
+        p_raw_token:
+          arg1.p_raw_token || arg1.rawToken || arg1.raw_token || arg1.token || arg1.tokenCode || "",
+        p_device_id:
+          arg1.p_device_id || arg1.deviceId || arg1.device_id || arg1.deviceFingerprint || null
       };
     }
     return {
@@ -107,12 +111,21 @@
   function normalizeBallotArgs(arg1, className, rawToken, chairpersonId, deviceId) {
     if (arg1 && typeof arg1 === "object") {
       return {
-        p_full_name: arg1.p_full_name || arg1.fullName || arg1.full_name || "",
-        p_class_name: arg1.p_class_name || arg1.className || arg1.class_name || "",
-        p_raw_token: arg1.p_raw_token || arg1.rawToken || arg1.raw_token || "",
+        p_full_name:
+          arg1.p_full_name || arg1.fullName || arg1.full_name || arg1.voterName || arg1.name || "",
+        p_class_name:
+          arg1.p_class_name || arg1.className || arg1.class_name || arg1.voterClass || arg1.kelas || "",
+        p_raw_token:
+          arg1.p_raw_token || arg1.rawToken || arg1.raw_token || arg1.token || arg1.tokenCode || "",
         p_chairperson_id:
-          arg1.p_chairperson_id || arg1.chairpersonId || arg1.chairperson_id || null,
-        p_device_id: arg1.p_device_id || arg1.deviceId || arg1.device_id || null
+          arg1.p_chairperson_id ||
+          arg1.chairpersonId ||
+          arg1.chairperson_id ||
+          arg1.candidateId ||
+          arg1.candidate_id ||
+          null,
+        p_device_id:
+          arg1.p_device_id || arg1.deviceId || arg1.device_id || arg1.deviceFingerprint || null
       };
     }
     return {
@@ -165,13 +178,36 @@
     }
   };
 
-  window.SupabaseService = {
+  const baseService = {
     getClient,
     mapFriendlyError,
     rpc: rpcBridge,
+    voter: rpcBridge,
+    votes: rpcBridge,
+    ballot: rpcBridge,
+    ballots: rpcBridge,
+    api: rpcBridge,
     verifyVoterAccess: rpcBridge.verifyVoterAccess,
     submitBallotAtomic: rpcBridge.submitBallotAtomic,
     castBallotAtomic: rpcBridge.castBallotAtomic,
     getElectionTally: rpcBridge.getElectionTally
   };
+
+  window.SupabaseService = new Proxy(baseService, {
+    get(target, prop, receiver) {
+      if (prop in target) {
+        return Reflect.get(target, prop, receiver);
+      }
+      if (
+        typeof prop === "string" &&
+        prop !== "then" &&
+        prop !== "catch" &&
+        prop !== "finally" &&
+        prop !== "toJSON"
+      ) {
+        return rpcBridge;
+      }
+      return undefined;
+    }
+  });
 })();
