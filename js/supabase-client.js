@@ -1,8 +1,9 @@
 /**
- * PASMANTAB e-VOTING 2026 — Supabase Client & Universal RPC Bridge
+ * PASMANTAB e-VOTING 2026 — Supabase Client, VotingEngine & RPC Bridge
  */
 (function () {
   let supabaseInstance = null;
+  let isSubmittingBallot = false;
 
   function resolveConfig() {
     const cfg =
@@ -47,6 +48,35 @@
     });
 
     return supabaseInstance;
+  }
+
+  function getOrCreateDeviceId() {
+    try {
+      if (
+        window.PasmantabUtils &&
+        typeof window.PasmantabUtils.getDeviceId === "function"
+      ) {
+        const utilId = window.PasmantabUtils.getDeviceId();
+        if (utilId) return utilId;
+      }
+
+      const storageKey = "pasmantab_device_id";
+      let existing =
+        localStorage.getItem(storageKey) ||
+        localStorage.getItem("pasmantab_hw_id");
+      if (existing) return existing;
+
+      const randomPart =
+        typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+          ? crypto.randomUUID()
+          : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+
+      existing = `HW:${randomPart}`;
+      localStorage.setItem(storageKey, existing);
+      return existing;
+    } catch (_) {
+      return `HW:SESSION_${Date.now().toString(36)}`;
+    }
   }
 
   function mapFriendlyError(err) {
@@ -97,14 +127,14 @@
         p_raw_token:
           arg1.p_raw_token || arg1.rawToken || arg1.raw_token || arg1.token || arg1.tokenCode || "",
         p_device_id:
-          arg1.p_device_id || arg1.deviceId || arg1.device_id || arg1.deviceFingerprint || null
+          arg1.p_device_id || arg1.deviceId || arg1.device_id || getOrCreateDeviceId()
       };
     }
     return {
       p_full_name: arg1 || "",
       p_class_name: className || "",
       p_raw_token: rawToken || "",
-      p_device_id: deviceId || null
+      p_device_id: deviceId || getOrCreateDeviceId()
     };
   }
 
@@ -125,7 +155,7 @@
           arg1.candidate_id ||
           null,
         p_device_id:
-          arg1.p_device_id || arg1.deviceId || arg1.device_id || arg1.deviceFingerprint || null
+          arg1.p_device_id || arg1.deviceId || arg1.device_id || getOrCreateDeviceId()
       };
     }
     return {
@@ -133,11 +163,13 @@
       p_class_name: className || "",
       p_raw_token: rawToken || "",
       p_chairperson_id: chairpersonId || null,
-      p_device_id: deviceId || null
+      p_device_id: deviceId || getOrCreateDeviceId()
     };
   }
 
   const rpcBridge = {
+    getDeviceId: getOrCreateDeviceId,
+
     async verifyVoterAccess(arg1, className, rawToken, deviceId) {
       const client = getClient();
       const params = normalizeVoterArgs(arg1, className, rawToken, deviceId);
@@ -147,17 +179,25 @@
     },
 
     async submitBallotAtomic(arg1, className, rawToken, chairpersonId, deviceId) {
-      const client = getClient();
-      const params = normalizeBallotArgs(
-        arg1,
-        className,
-        rawToken,
-        chairpersonId,
-        deviceId
-      );
-      const { data, error } = await client.rpc("cast_ballot_atomic", params);
-      if (error) throw error;
-      return data || { ok: true };
+      if (isSubmittingBallot) {
+        throw new Error("SUBMISSION_IN_PROGRESS");
+      }
+      isSubmittingBallot = true;
+      try {
+        const client = getClient();
+        const params = normalizeBallotArgs(
+          arg1,
+          className,
+          rawToken,
+          chairpersonId,
+          deviceId
+        );
+        const { data, error } = await client.rpc("cast_ballot_atomic", params);
+        if (error) throw error;
+        return data || { ok: true };
+      } finally {
+        isSubmittingBallot = false;
+      }
     },
 
     async castBallotAtomic(arg1, className, rawToken, chairpersonId, deviceId) {
@@ -178,36 +218,15 @@
     }
   };
 
-  const baseService = {
+  window.SupabaseService = {
     getClient,
     mapFriendlyError,
     rpc: rpcBridge,
-    voter: rpcBridge,
-    votes: rpcBridge,
-    ballot: rpcBridge,
-    ballots: rpcBridge,
-    api: rpcBridge,
     verifyVoterAccess: rpcBridge.verifyVoterAccess,
     submitBallotAtomic: rpcBridge.submitBallotAtomic,
     castBallotAtomic: rpcBridge.castBallotAtomic,
     getElectionTally: rpcBridge.getElectionTally
   };
 
-  window.SupabaseService = new Proxy(baseService, {
-    get(target, prop, receiver) {
-      if (prop in target) {
-        return Reflect.get(target, prop, receiver);
-      }
-      if (
-        typeof prop === "string" &&
-        prop !== "then" &&
-        prop !== "catch" &&
-        prop !== "finally" &&
-        prop !== "toJSON"
-      ) {
-        return rpcBridge;
-      }
-      return undefined;
-    }
-  });
+  window.VotingEngine = Object.assign(window.VotingEngine || {}, rpcBridge);
 })();
